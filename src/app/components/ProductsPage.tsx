@@ -37,7 +37,9 @@ import {
   Trash2, 
   Eye, 
   AlertCircle,
-  Filter
+  Filter,
+  LayoutGrid,
+  List
 } from 'lucide-react';
 import { useAuth } from '@/app/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -47,12 +49,14 @@ export const ProductsPage: React.FC = () => {
   const [products, setProducts] = useState<Product[]>(mockProducts);
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
+  const [stockFilter, setStockFilter] = useState('all');
+  const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
   const [currentPage, setCurrentPage] = useState(1);
   const [dialogMode, setDialogMode] = useState<'add' | 'edit' | 'view' | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [formData, setFormData] = useState<Partial<Product>>({});
 
-  const itemsPerPage = 10;
+  const itemsPerPage = viewMode === 'grid' ? 12 : 10;
 
   // Filter products
   const filteredProducts = products.filter((product) => {
@@ -60,7 +64,18 @@ export const ProductsPage: React.FC = () => {
       product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       product.sku.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = categoryFilter === 'all' || product.category === categoryFilter;
-    return matchesSearch && matchesCategory;
+    
+    // Stock status filter
+    let matchesStock = true;
+    if (stockFilter === 'in-stock') {
+      matchesStock = product.quantity > product.minStockLevel;
+    } else if (stockFilter === 'low-stock') {
+      matchesStock = product.quantity > 0 && product.quantity <= product.minStockLevel;
+    } else if (stockFilter === 'out-of-stock') {
+      matchesStock = product.quantity === 0;
+    }
+    
+    return matchesSearch && matchesCategory && matchesStock;
   });
 
   // Pagination
@@ -128,6 +143,16 @@ export const ProductsPage: React.FC = () => {
 
   const isLowStock = (product: Product) => product.quantity <= product.minStockLevel;
 
+  const getStockStatus = (product: Product): { label: string; className: string } => {
+    if (product.quantity === 0) {
+      return { label: 'Out of Stock', className: 'bg-red-100 text-red-700 hover:bg-red-100 border-red-200' };
+    } else if (product.quantity <= product.minStockLevel) {
+      return { label: 'Low Stock', className: 'bg-yellow-100 text-yellow-700 hover:bg-yellow-100 border-yellow-200' };
+    } else {
+      return { label: 'In Stock', className: 'bg-green-100 text-green-700 hover:bg-green-100 border-green-200' };
+    }
+  };
+
   const canEdit = user?.role === 'Admin' || user?.role === 'Staff';
   const canDelete = user?.role === 'Admin';
 
@@ -141,7 +166,8 @@ export const ProductsPage: React.FC = () => {
         {canEdit && (
           <Button onClick={() => handleOpenDialog('add')} className="gap-2">
             <Plus className="w-4 h-4" />
-            Add Product
+            <span className="hidden sm:inline">Add Product</span>
+            <span className="sm:hidden">Add</span>
           </Button>
         )}
       </div>
@@ -149,7 +175,7 @@ export const ProductsPage: React.FC = () => {
       {/* Filters */}
       <Card>
         <CardContent className="p-4">
-          <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex flex-col lg:flex-row gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <Input
@@ -159,25 +185,58 @@ export const ProductsPage: React.FC = () => {
                 className="pl-10"
               />
             </div>
-            <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4 text-slate-500" />
-              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger className="w-48">
-                  <SelectValue placeholder="Filter by category" />
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+              <div className="flex items-center gap-2">
+                <Filter className="w-4 h-4 text-slate-500 hidden sm:block" />
+                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                  <SelectTrigger className="w-full sm:w-48">
+                    <SelectValue placeholder="All Categories" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Categories</SelectItem>
+                    {categories.map(category => (
+                      <SelectItem key={category} value={category}>{category}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Select value={stockFilter} onValueChange={setStockFilter}>
+                <SelectTrigger className="w-full sm:w-48">
+                  <SelectValue placeholder="All Stock Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  {categories.map(category => (
-                    <SelectItem key={category} value={category}>{category}</SelectItem>
-                  ))}
+                  <SelectItem value="all">All Stock Status</SelectItem>
+                  <SelectItem value="in-stock">In Stock</SelectItem>
+                  <SelectItem value="low-stock">Low Stock</SelectItem>
+                  <SelectItem value="out-of-stock">Out of Stock</SelectItem>
                 </SelectContent>
               </Select>
+              <div className="flex items-center gap-1 border rounded-md p-1">
+                <Button
+                  variant={viewMode === 'table' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('table')}
+                  className="gap-1"
+                >
+                  <List className="w-4 h-4" />
+                  <span className="hidden sm:inline">Table</span>
+                </Button>
+                <Button
+                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('grid')}
+                  className="gap-1"
+                >
+                  <LayoutGrid className="w-4 h-4" />
+                  <span className="hidden sm:inline">Grid</span>
+                </Button>
+              </div>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Products Table */}
+      {/* Products Display */}
       <Card>
         <CardHeader>
           <CardTitle>
@@ -185,8 +244,9 @@ export const ProductsPage: React.FC = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <Table>
+          {viewMode === 'table' ? (
+            <div className="overflow-x-auto">
+              <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>SKU</TableHead>
@@ -208,10 +268,10 @@ export const ProductsPage: React.FC = () => {
                     <TableCell>{product.supplier}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
-                        {isLowStock(product) && (
-                          <AlertCircle className="w-4 h-4 text-orange-600" />
-                        )}
-                        <Badge variant={isLowStock(product) ? 'destructive' : 'default'}>
+                        <Badge className={getStockStatus(product).className}>
+                          {getStockStatus(product).label}
+                        </Badge>
+                        <Badge variant="outline">
                           {product.quantity} units
                         </Badge>
                       </div>
@@ -252,11 +312,95 @@ export const ProductsPage: React.FC = () => {
               </TableBody>
             </Table>
           </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {paginatedProducts.map((product) => {
+                const stockStatus = getStockStatus(product);
+                return (
+                  <Card key={product.id} className="flex flex-col hover:shadow-lg transition-shadow">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-lg truncate" title={product.name}>
+                            {product.name}
+                          </h3>
+                          <p className="text-sm text-slate-500">{product.sku}</p>
+                        </div>
+                        <Badge className={stockStatus.className + ' shrink-0'}>
+                          {stockStatus.label}
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="flex-1 space-y-3">
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">Category:</span>
+                          <span className="font-medium">{product.category}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">Supplier:</span>
+                          <span className="font-medium truncate ml-2" title={product.supplier}>
+                            {product.supplier}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">Stock:</span>
+                          <Badge variant="outline">{product.quantity} units</Badge>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">Unit Price:</span>
+                          <span className="font-medium">${product.unitPrice.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">Selling Price:</span>
+                          <span className="font-semibold text-green-600">
+                            ${product.sellingPrice.toFixed(2)}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 pt-2 border-t">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleOpenDialog('view', product)}
+                          className="flex-1 gap-1"
+                        >
+                          <Eye className="w-3 h-3" />
+                          View
+                        </Button>
+                        {canEdit && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleOpenDialog('edit', product)}
+                            className="flex-1 gap-1"
+                          >
+                            <Edit className="w-3 h-3" />
+                            Edit
+                          </Button>
+                        )}
+                        {canDelete && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDelete(product)}
+                            className="px-2"
+                          >
+                            <Trash2 className="w-4 h-4 text-red-600" />
+                          </Button>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between mt-4">
-              <p className="text-sm text-slate-500">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
+              <p className="text-sm text-slate-500 text-center sm:text-left">
                 Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredProducts.length)} of {filteredProducts.length} products
               </p>
               <div className="flex gap-2">
@@ -268,18 +412,35 @@ export const ProductsPage: React.FC = () => {
                 >
                   Previous
                 </Button>
-                <div className="flex items-center gap-1">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                    <Button
-                      key={page}
-                      variant={currentPage === page ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setCurrentPage(page)}
-                      className="w-8"
-                    >
-                      {page}
-                    </Button>
-                  ))}
+                <div className="hidden sm:flex items-center gap-1">
+                  {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                    let page;
+                    if (totalPages <= 5) {
+                      page = i + 1;
+                    } else if (currentPage <= 3) {
+                      page = i + 1;
+                    } else if (currentPage >= totalPages - 2) {
+                      page = totalPages - 4 + i;
+                    } else {
+                      page = currentPage - 2 + i;
+                    }
+                    return (
+                      <Button
+                        key={page}
+                        variant={currentPage === page ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setCurrentPage(page)}
+                        className="w-8"
+                      >
+                        {page}
+                      </Button>
+                    );
+                  })}
+                </div>
+                <div className="sm:hidden">
+                  <span className="text-sm text-slate-600 px-2">
+                    {currentPage} / {totalPages}
+                  </span>
                 </div>
                 <Button
                   variant="outline"

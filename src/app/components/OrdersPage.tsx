@@ -62,14 +62,14 @@ export const OrdersPage: React.FC = () => {
     }
   };
 
-  const getStatusVariant = (status: OrderStatus) => {
+  const getStatusClassName = (status: OrderStatus) => {
     switch (status) {
       case 'Completed':
-        return 'default';
+        return 'bg-green-100 text-green-700 hover:bg-green-100 border-green-200';
       case 'Pending':
-        return 'secondary';
+        return 'bg-yellow-100 text-yellow-700 hover:bg-yellow-100 border-yellow-200';
       case 'Cancelled':
-        return 'destructive';
+        return 'bg-red-100 text-red-700 hover:bg-red-100 border-red-200';
     }
   };
 
@@ -205,8 +205,7 @@ export const OrdersPage: React.FC = () => {
                     </TableCell>
                     <TableCell>
                       <Badge 
-                        variant={getStatusVariant(order.status)}
-                        className="gap-1"
+                        className={getStatusClassName(order.status) + ' gap-1'}
                       >
                         {getStatusIcon(order.status)}
                         {order.status}
@@ -239,8 +238,7 @@ export const OrdersPage: React.FC = () => {
               <span>Order Details</span>
               {selectedOrder && (
                 <Badge 
-                  variant={getStatusVariant(selectedOrder.status)}
-                  className="gap-1"
+                  className={getStatusClassName(selectedOrder.status) + ' gap-1'}
                 >
                   {getStatusIcon(selectedOrder.status)}
                   {selectedOrder.status}

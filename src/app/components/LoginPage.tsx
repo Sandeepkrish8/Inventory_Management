@@ -1,3 +1,4 @@
+"use client";
 import React, { useState } from 'react';
 import { useAuth } from '@/app/contexts/AuthContext';
 import { Button } from '@/app/components/ui/button';
@@ -37,7 +38,7 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  const roleFeatures = {
+  const roleFeatures: Record<UserRole, string[]> = {
     Admin: [
       'Full system access',
       'Manage all resources',

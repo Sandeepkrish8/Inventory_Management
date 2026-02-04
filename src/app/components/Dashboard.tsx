@@ -12,7 +12,8 @@ import {
   Activity,
   Sparkles,
   BarChart3,
-  PieChart
+  PieChart,
+  Award
 } from 'lucide-react';
 import { Badge } from '@/app/components/ui/badge';
 import { Button } from '@/app/components/ui/button';
@@ -38,6 +39,34 @@ export const Dashboard: React.FC = () => {
   const lowStockProducts = mockProducts.filter(p => p.quantity <= p.minStockLevel);
   const recentOrders = mockOrders.slice(0, 5);
   const recentTransactions = mockTransactions.slice(0, 6);
+
+  // Calculate top selling products based on orders
+  const productSales = new Map<string, { product: Product; totalSold: number; revenue: number }>();
+
+  mockOrders
+    .filter(order => order.status === 'Completed')
+    .forEach(order => {
+      order.items.forEach(item => {
+        const product = mockProducts.find(p => p.id === item.productId);
+        if (product) {
+          const existing = productSales.get(item.productId);
+          if (existing) {
+            existing.totalSold += item.quantity;
+            existing.revenue += item.quantity * item.unitPrice;
+          } else {
+            productSales.set(item.productId, {
+              product,
+              totalSold: item.quantity,
+              revenue: item.quantity * item.unitPrice
+            });
+          }
+        }
+      });
+    });
+
+  const topSellingProducts = Array.from(productSales.values())
+    .sort((a, b) => b.totalSold - a.totalSold)
+    .slice(0, 5);
 
   // Mock revenue data for chart
   const revenueData = [
@@ -273,6 +302,59 @@ export const Dashboard: React.FC = () => {
               </Bar>
             </BarChart>
           </ResponsiveContainer>
+        </CardContent>
+      </Card>
+
+      {/* Top Selling Products */}
+      <Card className="shadow-lg hover:shadow-xl transition-shadow">
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <Award className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600 flex-shrink-0" />
+            Top Selling Products
+          </CardTitle>
+          <p className="text-xs sm:text-sm text-slate-500">Best performing products this month</p>
+        </CardHeader>
+        <CardContent className="p-4 sm:p-6 pt-0">
+          {topSellingProducts.length === 0 ? (
+            <div className="text-center py-8">
+              <Package className="w-10 h-10 sm:w-12 sm:h-12 text-slate-300 mx-auto mb-2" />
+              <p className="text-sm text-slate-500">No sales data available</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {topSellingProducts.map((item, index) => (
+                <div 
+                  key={item.product.id}
+                  className="flex items-center gap-3 sm:gap-4 p-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200 hover:shadow-md transition-all hover:scale-105"
+                >
+                  <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full text-white font-bold text-sm sm:text-base flex-shrink-0">
+                    #{index + 1}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-slate-900 text-sm sm:text-base truncate">
+                      {item.product.name}
+                    </p>
+                    <p className="text-xs text-slate-500">SKU: {item.product.sku}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Badge variant="outline" className="text-xs">
+                        {item.totalSold} units sold
+                      </Badge>
+                      <span className="text-xs text-slate-500">
+                        Revenue: ${item.revenue.toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-end flex-shrink-0">
+                    <div className="flex items-center gap-1 text-green-600">
+                      <TrendingUp className="w-4 h-4" />
+                      <span className="font-bold text-base sm:text-lg">{item.totalSold}</span>
+                    </div>
+                    <span className="text-xs text-slate-500">units</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 
