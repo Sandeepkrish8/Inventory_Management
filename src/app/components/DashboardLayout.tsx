@@ -1,5 +1,6 @@
 import React, { ReactNode, useState } from 'react';
 import { useAuth } from '@/app/contexts/AuthContext';
+import { useTenant } from '@/app/contexts/TenantContext';
 import { Button } from '@/app/components/ui/button';
 import { 
   LayoutDashboard, 
@@ -16,10 +17,23 @@ import {
   Search,
   Settings,
   ChevronDown,
-  BarChart3
+  BarChart3,
+  Building2,
+  Globe,
+  CheckCircle2,
+  FileText,
+  Users,
+  AlertTriangle,
+  DollarSign,
+  AlertCircle,
+  RotateCcw,
+  UserCog,
+  Warehouse,
+  TruckIcon
 } from 'lucide-react';
 import { cn } from '@/app/components/ui/utils';
 import { Badge } from '@/app/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/app/components/ui/avatar';
 import { Input } from '@/app/components/ui/input';
 import {
   DropdownMenu,
@@ -29,6 +43,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/app/components/ui/dropdown-menu';
+import { NotificationsPanel } from '@/app/components/NotificationsPanel';
+import { ThemeSwitcher } from '@/app/components/ThemeSwitcher';
+import { GlobalSearch } from '@/app/components/GlobalSearch';
+import { CommandPalette, CommandPaletteHint } from '@/app/components/CommandPalette';
+import { KeyboardShortcutsHelp } from '@/app/components/KeyboardShortcutsHelp';
+import { Separator } from '@/app/components/ui/separator';
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -42,18 +62,34 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   onNavigate 
 }) => {
   const { user, logout } = useAuth();
+  const { currentTenant, currentEnvironment, availableTenants, switchTenant, switchEnvironment } = useTenant();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'analytics', label: 'Analytics', icon: BarChart3 },
-    { id: 'products', label: 'Products', icon: Package },
-    { id: 'categories', label: 'Categories', icon: FolderTree },
-    { id: 'suppliers', label: 'Suppliers', icon: Truck },
-    { id: 'transactions', label: 'Transactions', icon: ArrowLeftRight },
-    { id: 'orders', label: 'Orders', icon: ShoppingCart },
+  const allMenuItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, allowedRoles: ['Admin', 'Staff', 'Viewer'] },
+    { id: 'analytics', label: 'Analytics', icon: BarChart3, allowedRoles: ['Admin', 'Staff', 'Viewer'] },
+    { id: 'products', label: 'Products', icon: Package, allowedRoles: ['Admin', 'Staff', 'Viewer'] },
+    { id: 'categories', label: 'Categories', icon: FolderTree, allowedRoles: ['Admin', 'Staff'] },
+    { id: 'suppliers', label: 'Suppliers', icon: Truck, allowedRoles: ['Admin', 'Staff', 'Viewer'] },
+    { id: 'transactions', label: 'Transactions', icon: ArrowLeftRight, allowedRoles: ['Admin', 'Staff', 'Viewer'] },
+    { id: 'orders', label: 'Orders', icon: ShoppingCart, allowedRoles: ['Admin', 'Staff', 'Viewer'] },
+    { id: 'purchase-orders', label: 'Purchase Orders', icon: FileText, allowedRoles: ['Admin', 'Staff'] },
+    { id: 'customers', label: 'Customers', icon: Users, allowedRoles: ['Admin', 'Staff'] },
+    { id: 'stock-adjustments', label: 'Stock Adjustments', icon: AlertTriangle, allowedRoles: ['Admin', 'Staff'] },
+    { id: 'invoices', label: 'Invoices', icon: DollarSign, allowedRoles: ['Admin'] },
+    { id: 'low-stock-alerts', label: 'Low Stock Alerts', icon: AlertCircle, allowedRoles: ['Admin'] },
+    { id: 'users', label: 'Users Management', icon: UserCog, allowedRoles: ['Admin'] },
+    { id: 'warehouses', label: 'Warehouses', icon: Warehouse, allowedRoles: ['Admin'] },
+    { id: 'stock-transfers', label: 'Stock Transfers', icon: TruckIcon, allowedRoles: ['Admin', 'Staff'] },
+    { id: 'settings', label: 'Settings', icon: Settings, allowedRoles: ['Admin', 'Staff', 'Viewer'] },
   ];
+
+  // Filter menu items based on user role
+  const menuItems = allMenuItems.filter(item => {
+    if (!user?.role) return false;
+    return (item as any).allowedRoles.includes(user.role);
+  });
 
   const handleNavigation = (page: string) => {
     onNavigate(page);
@@ -61,44 +97,42 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Top Navigation */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 dark:from-slate-950 dark:via-slate-900 dark:to-slate-900">
+      {/* Command Palette */}
+      <CommandPalette onNavigate={onNavigate} />
+      
+      {/* Keyboard Shortcuts Help */}
+      <KeyboardShortcutsHelp />
+      
+      {/* Top Navigation - Glass Effect */}
+      <header className="bg-white/90 dark:bg-slate-900/95 backdrop-blur-2xl border-b border-slate-200/80 dark:border-slate-700/70 sticky top-0 z-50 shadow-xl dark:shadow-2xl dark:shadow-blue-900/20">
         <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4">
           {/* Left Section */}
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
               size="icon"
-              className="lg:hidden"
+              className="lg:hidden text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
             >
               {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </Button>
             
             <div className="flex items-center gap-2 sm:gap-3">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center shadow-lg">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-600 via-blue-700 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/50 dark:shadow-blue-900/50 ring-2 ring-blue-400/20">
                 <Package className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
               </div>
               <div className="hidden sm:block">
-                <h1 className="font-semibold text-slate-900 text-sm sm:text-base">Inventory Management</h1>
-                <p className="text-xs text-slate-500">System Dashboard</p>
+                <h1 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Inventory Management</h1>
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">System Dashboard</p>
               </div>
             </div>
           </div>
 
           {/* Center - Search Bar (Hidden on mobile) */}
-          <div className="hidden md:flex flex-1 max-w-md mx-4">
-            <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <Input
-                type="text"
-                placeholder="Search products, orders..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 w-full bg-slate-50 border-slate-200 focus:bg-white transition-colors"
-              />
-            </div>
+          <div className="hidden md:flex flex-1 max-w-md mx-4 items-center gap-4">
+            <GlobalSearch />
+            <CommandPaletteHint />
           </div>
           
           {/* Right Section */}
@@ -107,35 +141,145 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden"
+              className="md:hidden text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
             >
               <Search className="w-5 h-5" />
             </Button>
 
+            {/* Theme Switcher */}
+            <ThemeSwitcher />
+
+            {/* Tenant/Environment Switcher */}
+            {currentTenant && currentEnvironment && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="gap-2 hidden lg:flex hover:bg-slate-100 dark:hover:bg-slate-800">
+                    <Avatar className="w-6 h-6">
+                      <AvatarImage src={currentTenant.logo} />
+                      <AvatarFallback className="text-xs bg-gradient-to-br from-indigo-500 to-purple-500 text-white">
+                        {currentTenant.name.substring(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="text-left">
+                      <p className="text-xs font-semibold text-slate-900 dark:text-white max-w-[120px] truncate">
+                        {currentTenant.name}
+                      </p>
+                      <Badge 
+                        variant="outline" 
+                        className={cn(
+                          "text-[10px] h-4 px-1",
+                          currentEnvironment.type === 'production' && "border-red-500/50 text-red-700 dark:text-red-400",
+                          currentEnvironment.type === 'staging' && "border-amber-500/50 text-amber-700 dark:text-amber-400",
+                          currentEnvironment.type === 'development' && "border-blue-500/50 text-blue-700 dark:text-blue-400"
+                        )}
+                      >
+                        {currentEnvironment.type}
+                      </Badge>
+                    </div>
+                    <ChevronDown className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-72">
+                  <DropdownMenuLabel className="flex items-center gap-2">
+                    <Globe className="w-4 h-4" />
+                    Switch Workspace
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  
+                  {/* Tenants Section */}
+                  <div className="px-2 py-1.5">
+                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-1">
+                      <Building2 className="w-3 h-3" />
+                      Organizations
+                    </p>
+                    <div className="space-y-1">
+                      {availableTenants.map((tenant) => (
+                        <DropdownMenuItem
+                          key={tenant.id}
+                          onClick={() => switchTenant(tenant.id)}
+                          className="cursor-pointer"
+                        >
+                          <div className="flex items-center gap-2 w-full">
+                            <Avatar className="w-6 h-6">
+                              <AvatarImage src={tenant.logo} />
+                              <AvatarFallback className="text-xs bg-gradient-to-br from-indigo-500 to-purple-500 text-white">
+                                {tenant.name.substring(0, 2).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium truncate">{tenant.name}</p>
+                              <Badge variant="outline" className="text-[10px] h-4 capitalize">
+                                {tenant.subscription}
+                              </Badge>
+                            </div>
+                            {currentTenant.id === tenant.id && (
+                              <CheckCircle2 className="w-4 h-4 text-indigo-500 flex-shrink-0" />
+                            )}
+                          </div>
+                        </DropdownMenuItem>
+                      ))}
+                    </div>
+                  </div>
+
+                  <DropdownMenuSeparator />
+
+                  {/* Environments Section */}
+                  <div className="px-2 py-1.5">
+                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">
+                      Environments
+                    </p>
+                    <div className="space-y-1">
+                      {currentTenant.environments.map((env) => (
+                        <DropdownMenuItem
+                          key={env.id}
+                          onClick={() => switchEnvironment(env.id)}
+                          className="cursor-pointer"
+                        >
+                          <div className="flex items-center justify-between w-full">
+                            <div className="flex items-center gap-2">
+                              <div className={cn(
+                                "w-2 h-2 rounded-full",
+                                env.status === 'active' && "bg-green-500",
+                                env.status === 'inactive' && "bg-slate-400",
+                                env.status === 'maintenance' && "bg-amber-500"
+                              )} />
+                              <span className="text-sm">{env.name}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Badge 
+                                variant={env.type === 'production' ? 'destructive' : 'secondary'}
+                                className="text-[10px] h-4 capitalize"
+                              >
+                                {env.type}
+                              </Badge>
+                              {currentEnvironment.id === env.id && (
+                                <CheckCircle2 className="w-4 h-4 text-indigo-500" />
+                              )}
+                            </div>
+                          </div>
+                        </DropdownMenuItem>
+                      ))}
+                    </div>
+                  </div>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+
             {/* Notifications */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="relative"
-            >
-              <Bell className="w-5 h-5" />
-              <Badge className="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center p-0 text-xs bg-red-500">
-                3
-              </Badge>
-            </Button>
+            <NotificationsPanel />
 
             {/* User Menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="gap-2 hidden sm:flex">
-                  <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                <Button variant="ghost" className="gap-2 hidden sm:flex hover:bg-slate-100 dark:hover:bg-slate-800">
+                  <div className="w-8 h-8 bg-gradient-to-br from-purple-500 via-pink-500 to-rose-500 rounded-full flex items-center justify-center ring-2 ring-purple-400/20 shadow-lg">
                     <User className="w-4 h-4 text-white" />
                   </div>
                   <div className="text-left hidden lg:block">
-                    <p className="text-sm font-medium text-slate-900">{user?.name}</p>
-                    <p className="text-xs text-slate-500">{user?.role}</p>
+                    <p className="text-sm font-semibold text-slate-900 dark:text-white">{user?.name}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">{user?.role}</p>
                   </div>
-                  <ChevronDown className="w-4 h-4 text-slate-500" />
+                  <ChevronDown className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
@@ -150,7 +294,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                   Settings
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={logout} className="text-red-600">
+                <DropdownMenuItem onClick={logout} className="text-red-600 dark:text-red-400">
                   <LogOut className="w-4 h-4 mr-2" />
                   Logout
                 </DropdownMenuItem>
@@ -161,7 +305,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             <Button
               variant="ghost"
               size="icon"
-              className="sm:hidden"
+              className="sm:hidden text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
               onClick={logout}
             >
               <LogOut className="w-5 h-5" />
@@ -174,15 +318,15 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         {/* Mobile Overlay */}
         {isSidebarOpen && (
           <div
-            className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+            className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm z-30 lg:hidden"
             onClick={() => setIsSidebarOpen(false)}
           />
         )}
 
-        {/* Sidebar */}
+        {/* Sidebar - Glass Effect */}
         <aside
           className={cn(
-            "fixed lg:sticky top-[57px] sm:top-[73px] left-0 z-40 w-64 bg-white border-r border-slate-200 h-[calc(100vh-57px)] sm:h-[calc(100vh-73px)] transition-transform duration-300 ease-in-out",
+            "fixed lg:sticky top-[57px] sm:top-[73px] left-0 z-40 w-64 bg-white/90 dark:bg-slate-900/95 backdrop-blur-2xl border-r border-slate-200/80 dark:border-slate-700/70 h-[calc(100vh-57px)] sm:h-[calc(100vh-73px)] transition-transform duration-300 ease-in-out shadow-2xl dark:shadow-2xl dark:shadow-blue-900/20",
             isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
           )}
         >
@@ -196,33 +340,36 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                   key={item.id}
                   onClick={() => handleNavigation(item.id)}
                   className={cn(
-                    "w-full flex items-center gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg transition-all text-left group",
+                    "w-full flex items-center gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl transition-all text-left group relative overflow-hidden",
                     isActive 
-                      ? "bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 shadow-sm" 
-                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                      ? "bg-gradient-to-r from-blue-500 via-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/50 dark:shadow-blue-900/50" 
+                      : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white"
                   )}
                 >
-                  <Icon className={cn(
-                    "w-5 h-5 transition-transform group-hover:scale-110",
-                    isActive && "text-blue-600"
-                  )} />
-                  <span className="font-medium text-sm sm:text-base">{item.label}</span>
                   {isActive && (
-                    <div className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-600" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-purple-400/20 animate-pulse" />
+                  )}
+                  <Icon className={cn(
+                    "w-5 h-5 transition-all duration-300 relative z-10",
+                    isActive ? "text-white scale-110" : "text-slate-600 dark:text-slate-400 group-hover:scale-110 group-hover:text-blue-600 dark:group-hover:text-blue-400"
+                  )} />
+                  <span className="font-semibold text-sm sm:text-base relative z-10">{item.label}</span>
+                  {isActive && (
+                    <div className="ml-auto w-2 h-2 rounded-full bg-white shadow-lg shadow-white/50 animate-pulse relative z-10" />
                   )}
                 </button>
               );
             })}
 
             {/* User Info at Bottom (Mobile) */}
-            <div className="lg:hidden mt-6 pt-6 border-t border-slate-200">
-              <div className="flex items-center gap-3 px-4 py-3 bg-slate-50 rounded-lg">
-                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+            <div className="lg:hidden mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
+              <div className="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-slate-100 to-slate-50 dark:from-slate-800 dark:to-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 via-pink-500 to-rose-500 rounded-full flex items-center justify-center shadow-lg ring-2 ring-purple-400/20">
                   <User className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <p className="font-medium text-slate-900 text-sm">{user?.name}</p>
-                  <p className="text-xs text-slate-500">{user?.role}</p>
+                  <p className="font-semibold text-slate-900 dark:text-white text-sm">{user?.name}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{user?.role}</p>
                 </div>
               </div>
             </div>

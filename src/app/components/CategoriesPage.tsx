@@ -25,9 +25,16 @@ import { Textarea } from '@/app/components/ui/textarea';
 import { Plus, Edit, Trash2, FolderTree } from 'lucide-react';
 import { useAuth } from '@/app/contexts/AuthContext';
 import { toast } from 'sonner';
+import { AccessDenied } from '@/app/components/AccessDenied';
 
 export const CategoriesPage: React.FC = () => {
   const { user } = useAuth();
+  
+  // Block Viewer role from accessing this page
+  if (user?.role === 'Viewer') {
+    return <AccessDenied message="You don't have permission to access this page. This page is restricted to Staff and Admin users only." />;
+  }
+  
   const [categories, setCategories] = useState<Category[]>(mockCategories);
   const [dialogMode, setDialogMode] = useState<'add' | 'edit' | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);

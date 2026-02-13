@@ -5,6 +5,9 @@ import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/app/components/ui/card';
 import { Badge } from '@/app/components/ui/badge';
+import { Breadcrumbs } from '@/app/components/Breadcrumbs';
+import { ColumnCustomizer, TableColumn } from '@/app/components/ColumnCustomizer';
+import { LoadingSkeleton } from '@/app/components/LoadingSkeleton';
 import { 
   Table, 
   TableBody, 
@@ -39,7 +42,8 @@ import {
   AlertCircle,
   Filter,
   LayoutGrid,
-  List
+  List,
+  Package
 } from 'lucide-react';
 import { useAuth } from '@/app/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -55,6 +59,17 @@ export const ProductsPage: React.FC = () => {
   const [dialogMode, setDialogMode] = useState<'add' | 'edit' | 'view' | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [formData, setFormData] = useState<Partial<Product>>({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [tableColumns, setTableColumns] = useState<TableColumn[]>([
+    { id: 'sku', label: 'SKU', visible: true },
+    { id: 'name', label: 'Product Name', visible: true, pinned: true },
+    { id: 'category', label: 'Category', visible: true },
+    { id: 'quantity', label: 'Stock', visible: true },
+    { id: 'price', label: 'Price', visible: true },
+    { id: 'supplier', label: 'Supplier', visible: true },
+    { id: 'status', label: 'Status', visible: true },
+    { id: 'actions', label: 'Actions', visible: true, pinned: true },
+  ]);
 
   const itemsPerPage = viewMode === 'grid' ? 12 : 10;
 
@@ -158,6 +173,14 @@ export const ProductsPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* Breadcrumbs */}
+      <Breadcrumbs 
+        items={[
+          { label: 'Home' },
+          { label: 'Products', icon: Package }
+        ]}
+      />
+      
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-semibold text-slate-900">Products</h2>
@@ -231,6 +254,12 @@ export const ProductsPage: React.FC = () => {
                   <span className="hidden sm:inline">Grid</span>
                 </Button>
               </div>
+              {viewMode === 'table' && (
+                <ColumnCustomizer 
+                  columns={tableColumns}
+                  onColumnsChange={setTableColumns}
+                />
+              )}
             </div>
           </div>
         </CardContent>

@@ -13,7 +13,8 @@ import {
   Sparkles,
   BarChart3,
   PieChart,
-  Award
+  Award,
+  LayoutDashboard
 } from 'lucide-react';
 import { Badge } from '@/app/components/ui/badge';
 import { Button } from '@/app/components/ui/button';
@@ -33,6 +34,8 @@ import {
   ResponsiveContainer
 } from 'recharts';
 import { format } from 'date-fns';
+import { Breadcrumbs } from '@/app/components/Breadcrumbs';
+import { Product } from '@/app/types';
 
 export const Dashboard: React.FC = () => {
   const metrics = mockDashboardMetrics;
@@ -136,15 +139,22 @@ export const Dashboard: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-4 sm:space-y-6 pb-6">
+    <div className="space-y-4 sm:space-y-6 pb-6">      {/* Breadcrumbs */}
+      <Breadcrumbs 
+        items={[
+          { label: 'Home', icon: LayoutDashboard },
+          { label: 'Dashboard' }
+        ]}
+      />
+      
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 flex items-center gap-2">
-            <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600" />
+          <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+            <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600 dark:text-blue-400" />
             Dashboard
           </h2>
-          <p className="text-sm sm:text-base text-slate-500 mt-1">Welcome back! Here's what's happening today.</p>
+          <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 mt-1">Welcome back! Here's what's happening today.</p>
         </div>
         <Button className="gap-2 w-full sm:w-auto">
           <Activity className="w-4 h-4" />
