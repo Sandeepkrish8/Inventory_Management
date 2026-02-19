@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { mockProducts } from '@/app/data/mockData';
+import { mockProducts, mockOrders, mockTransactions } from '@/app/data/mockData';
 import { Product } from '@/app/types';
 import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
@@ -33,17 +33,22 @@ import {
 } from '@/app/components/ui/dialog';
 import { Label } from '@/app/components/ui/label';
 import { Textarea } from '@/app/components/ui/textarea';
-import { 
-  Search, 
-  Plus, 
-  Edit, 
-  Trash2, 
-  Eye, 
+import { Checkbox } from '@/app/components/ui/checkbox';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/app/components/ui/sheet';
+import { Progress } from '@/app/components/ui/progress';
+import {
+  Search,
+  Plus,
+  Edit,
+  Trash2,
+  Eye,
   AlertCircle,
   Filter,
   LayoutGrid,
   List,
-  Package
+  Package,
+  Download,
+  Image as ImageIcon
 } from 'lucide-react';
 import { useAuth } from '@/app/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -60,6 +65,7 @@ export const ProductsPage: React.FC = () => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [formData, setFormData] = useState<Partial<Product>>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [tableColumns, setTableColumns] = useState<TableColumn[]>([
     { id: 'sku', label: 'SKU', visible: true },
     { id: 'name', label: 'Product Name', visible: true, pinned: true },
@@ -171,6 +177,22 @@ export const ProductsPage: React.FC = () => {
   const canEdit = user?.role === 'Admin' || user?.role === 'Staff';
   const canDelete = user?.role === 'Admin';
 
+  const handleExportCSV = () => {
+    const rows = filteredProducts;
+    const csv = [
+      'SKU,Name,Category,Supplier,Quantity,Min Stock,Unit Price,Selling Price',
+      ...rows.map(p => [p.sku, `"${p.name}"`, p.category, `"${p.supplier}"`, p.quantity, p.minStockLevel, p.unitPrice.toFixed(2), p.sellingPrice.toFixed(2)].join(','))
+    ].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `products-${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success('Products exported to CSV');
+  };
+
   return (
     <div className="space-y-6">
       {/* Breadcrumbs */}
@@ -186,13 +208,19 @@ export const ProductsPage: React.FC = () => {
           <h2 className="text-3xl font-semibold text-slate-900">Products</h2>
           <p className="text-slate-500 mt-1">Manage your inventory products</p>
         </div>
-        {canEdit && (
-          <Button onClick={() => handleOpenDialog('add')} className="gap-2">
-            <Plus className="w-4 h-4" />
-            <span className="hidden sm:inline">Add Product</span>
-            <span className="sm:hidden">Add</span>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" className="gap-2" onClick={handleExportCSV}>
+            <Download className="w-4 h-4" />
+            Export CSV
           </Button>
-        )}
+          {canEdit && (
+            <Button onClick={() => handleOpenDialog('add')} className="gap-2">
+              <Plus className="w-4 h-4" />
+              <span className="hidden sm:inline">Add Product</span>
+              <span className="sm:hidden">Add</span>
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Filters */}
@@ -265,6 +293,38 @@ export const ProductsPage: React.FC = () => {
         </CardContent>
       </Card>
 
+      {selectedIds.size > 0 && (
+        <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+          <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
+            {selectedIds.size} product{selectedIds.size > 1 ? 's' : ''} selected
+          </span>
+          <Button size="sm" variant="outline" onClick={() => {
+            const selected = filteredProducts.filter(p => selectedIds.has(p.id));
+            const csv = ['SKU,Name,Category,Quantity,Unit Price', ...selected.map(p => [p.sku, `"${p.name}"`, p.category, p.quantity, p.unitPrice.toFixed(2)].join(','))].join('\n');
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = 'selected-products.csv'; a.click();
+            URL.revokeObjectURL(url);
+          }} className="gap-1">
+            <Download className="w-3 h-3" />Export
+          </Button>
+          {(user?.role === 'Admin') && (
+            <Button size="sm" variant="destructive" onClick={() => {
+              if (confirm(`Delete ${selectedIds.size} products?`)) {
+                setProducts(products.filter(p => !selectedIds.has(p.id)));
+                setSelectedIds(new Set());
+                toast.success(`${selectedIds.size} products deleted`);
+              }
+            }} className="gap-1">
+              <Trash2 className="w-3 h-3" />Delete Selected
+            </Button>
+          )}
+          <Button size="sm" variant="ghost" onClick={() => setSelectedIds(new Set())}>
+            Clear
+          </Button>
+        </div>
+      )}
+
       {/* Products Display */}
       <Card>
         <CardHeader>
@@ -278,6 +338,20 @@ export const ProductsPage: React.FC = () => {
               <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-10">
+                    <Checkbox
+                      checked={paginatedProducts.length > 0 && paginatedProducts.every(p => selectedIds.has(p.id))}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setSelectedIds(new Set([...selectedIds, ...paginatedProducts.map(p => p.id)]));
+                        } else {
+                          const newIds = new Set(selectedIds);
+                          paginatedProducts.forEach(p => newIds.delete(p.id));
+                          setSelectedIds(newIds);
+                        }
+                      }}
+                    />
+                  </TableHead>
                   <TableHead>SKU</TableHead>
                   <TableHead>Product Name</TableHead>
                   <TableHead>Category</TableHead>
@@ -291,6 +365,16 @@ export const ProductsPage: React.FC = () => {
               <TableBody>
                 {paginatedProducts.map((product) => (
                   <TableRow key={product.id}>
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedIds.has(product.id)}
+                        onCheckedChange={(checked) => {
+                          const newIds = new Set(selectedIds);
+                          if (checked) newIds.add(product.id); else newIds.delete(product.id);
+                          setSelectedIds(newIds);
+                        }}
+                      />
+                    </TableCell>
                     <TableCell className="font-medium">{product.sku}</TableCell>
                     <TableCell>{product.name}</TableCell>
                     <TableCell>{product.category}</TableCell>
@@ -347,6 +431,11 @@ export const ProductsPage: React.FC = () => {
                 const stockStatus = getStockStatus(product);
                 return (
                   <Card key={product.id} className="flex flex-col hover:shadow-lg transition-shadow">
+                    {product.imageUrl && (
+                      <div className="w-full h-32 rounded-t-lg overflow-hidden bg-slate-100">
+                        <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+                      </div>
+                    )}
                     <CardHeader className="pb-3">
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1 min-w-0">
@@ -502,6 +591,39 @@ export const ProductsPage: React.FC = () => {
           </DialogHeader>
 
           <div className="grid grid-cols-2 gap-4 py-4">
+            <div className="col-span-2 space-y-2">
+              <Label>Product Image</Label>
+              <div className="flex items-center gap-4">
+                <div className="w-20 h-20 rounded-lg border-2 border-dashed border-slate-300 dark:border-slate-600 flex items-center justify-center overflow-hidden bg-slate-50 dark:bg-slate-800">
+                  {(formData.imageUrl) ? (
+                    <img src={formData.imageUrl} alt="Product" className="w-full h-full object-cover rounded-lg" />
+                  ) : (
+                    <ImageIcon className="w-8 h-8 text-slate-400" />
+                  )}
+                </div>
+                {dialogMode !== 'view' && (
+                  <div className="space-y-1">
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      className="max-w-xs"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onloadend = () => {
+                            setFormData({ ...formData, imageUrl: reader.result as string });
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                    <p className="text-xs text-slate-500">PNG, JPG up to 5MB</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="name">Product Name *</Label>
               <Input
@@ -519,6 +641,17 @@ export const ProductsPage: React.FC = () => {
                 value={formData.sku || ''}
                 onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
                 disabled={dialogMode === 'view'}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="barcode">Barcode</Label>
+              <Input
+                id="barcode"
+                value={formData.barcode || ''}
+                onChange={(e) => setFormData({ ...formData, barcode: e.target.value })}
+                disabled={dialogMode === 'view'}
+                placeholder="e.g. 8901234567890"
               />
             </div>
 

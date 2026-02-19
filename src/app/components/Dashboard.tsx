@@ -1,12 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/app/components/ui/card';
 import { mockDashboardMetrics, mockProducts, mockOrders, mockTransactions, mockCategories } from '@/app/data/mockData';
-import { 
-  Package, 
-  AlertTriangle, 
-  ShoppingCart, 
-  DollarSign, 
-  TrendingUp, 
+import {
+  Package,
+  AlertTriangle,
+  ShoppingCart,
+  DollarSign,
+  TrendingUp,
   TrendingDown,
   ArrowUpRight,
   Activity,
@@ -14,30 +14,41 @@ import {
   BarChart3,
   PieChart,
   Award,
-  LayoutDashboard
+  LayoutDashboard,
+  Boxes,
+  Brain,
+  Zap
 } from 'lucide-react';
 import { Badge } from '@/app/components/ui/badge';
 import { Button } from '@/app/components/ui/button';
 import { Progress } from '@/app/components/ui/progress';
-import { 
-  AreaChart, 
-  Area, 
-  BarChart, 
-  Bar, 
-  PieChart as RePieChart, 
-  Pie, 
-  Cell, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
+import {
+  AreaChart,
+  Area,
+  BarChart,
+  Bar,
+  PieChart as RePieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   ResponsiveContainer
 } from 'recharts';
 import { format } from 'date-fns';
 import { Breadcrumbs } from '@/app/components/Breadcrumbs';
 import { Product } from '@/app/types';
+import { RealTimeStockUpdates } from '@/app/components/RealTimeStockUpdates';
+import { AIAlertsPanel } from '@/app/components/AIAlertsPanel';
 
-export const Dashboard: React.FC = () => {
+interface DashboardProps {
+  onNavigate?: (page: string) => void;
+}
+
+export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
+  const [dashboardRange, setDashboardRange] = useState<'7d' | '30d' | '90d' | '1y'>('1y');
+
   const metrics = mockDashboardMetrics;
   const lowStockProducts = mockProducts.filter(p => p.quantity <= p.minStockLevel);
   const recentOrders = mockOrders.slice(0, 5);
@@ -71,15 +82,43 @@ export const Dashboard: React.FC = () => {
     .sort((a, b) => b.totalSold - a.totalSold)
     .slice(0, 5);
 
-  // Mock revenue data for chart
-  const revenueData = [
-    { month: 'Jan', revenue: 4200, orders: 12 },
-    { month: 'Feb', revenue: 5100, orders: 15 },
-    { month: 'Mar', revenue: 4800, orders: 14 },
-    { month: 'Apr', revenue: 6200, orders: 18 },
-    { month: 'May', revenue: 7100, orders: 21 },
-    { month: 'Jun', revenue: 6900, orders: 19 },
-  ];
+  // Revenue data map for date range filter
+  const revenueDataMap = {
+    '7d': [
+      { label: 'Mon', revenue: 1100, orders: 4 },
+      { label: 'Tue', revenue: 1450, orders: 5 },
+      { label: 'Wed', revenue: 980, orders: 3 },
+      { label: 'Thu', revenue: 1720, orders: 6 },
+      { label: 'Fri', revenue: 2100, orders: 7 },
+      { label: 'Sat', revenue: 2450, orders: 8 },
+      { label: 'Sun', revenue: 1800, orders: 6 },
+    ],
+    '30d': [
+      { label: 'Wk 1', revenue: 4200, orders: 12 },
+      { label: 'Wk 2', revenue: 5100, orders: 15 },
+      { label: 'Wk 3', revenue: 6200, orders: 18 },
+      { label: 'Wk 4', revenue: 7100, orders: 21 },
+    ],
+    '90d': [
+      { label: 'Jan', revenue: 4200, orders: 12 },
+      { label: 'Feb', revenue: 5100, orders: 15 },
+      { label: 'Mar', revenue: 6900, orders: 19 },
+    ],
+    '1y': [
+      { label: 'Jan', revenue: 4200, orders: 12 },
+      { label: 'Feb', revenue: 5100, orders: 15 },
+      { label: 'Mar', revenue: 4800, orders: 14 },
+      { label: 'Apr', revenue: 6200, orders: 18 },
+      { label: 'May', revenue: 7100, orders: 21 },
+      { label: 'Jun', revenue: 6900, orders: 19 },
+      { label: 'Jul', revenue: 8200, orders: 24 },
+      { label: 'Aug', revenue: 7800, orders: 23 },
+      { label: 'Sep', revenue: 9100, orders: 27 },
+      { label: 'Oct', revenue: 10200, orders: 30 },
+      { label: 'Nov', revenue: 11500, orders: 34 },
+      { label: 'Dec', revenue: 13200, orders: 39 },
+    ],
+  };
 
   // Category distribution for pie chart
   const categoryData = mockCategories.map(cat => ({
@@ -97,6 +136,8 @@ export const Dashboard: React.FC = () => {
   const COLORS = ['#3b82f6', '#f59e0b', '#ef4444'];
   const CATEGORY_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
 
+  const totalInventoryValue = mockProducts.reduce((sum, p) => sum + p.quantity * p.unitPrice, 0);
+
   const stats = [
     {
       title: 'Total Products',
@@ -105,7 +146,8 @@ export const Dashboard: React.FC = () => {
       color: 'text-blue-600',
       bgColor: 'bg-blue-500',
       gradient: 'from-blue-500 to-blue-600',
-      description: 'Active products',
+      change: 2,
+      description: '+2 added this month',
     },
     {
       title: 'Low Stock Alerts',
@@ -114,7 +156,8 @@ export const Dashboard: React.FC = () => {
       color: 'text-orange-600',
       bgColor: 'bg-orange-500',
       gradient: 'from-orange-500 to-orange-600',
-      description: 'Need attention',
+      change: -15,
+      description: 'Down from last month',
     },
     {
       title: 'Recent Orders',
@@ -136,17 +179,27 @@ export const Dashboard: React.FC = () => {
       change: metrics.revenueChange,
       description: 'This month',
     },
+    {
+      title: 'Inventory Value',
+      value: `$${totalInventoryValue.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
+      icon: Boxes,
+      color: 'text-indigo-600',
+      bgColor: 'bg-indigo-500',
+      gradient: 'from-indigo-500 to-indigo-600',
+      change: 5,
+      description: 'Total stock value',
+    },
   ];
 
   return (
     <div className="space-y-4 sm:space-y-6 pb-6">      {/* Breadcrumbs */}
-      <Breadcrumbs 
+      <Breadcrumbs
         items={[
           { label: 'Home', icon: LayoutDashboard },
           { label: 'Dashboard' }
         ]}
       />
-      
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -156,14 +209,14 @@ export const Dashboard: React.FC = () => {
           </h2>
           <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 mt-1">Welcome back! Here's what's happening today.</p>
         </div>
-        <Button className="gap-2 w-full sm:w-auto">
+        <Button className="gap-2 w-full sm:w-auto" onClick={() => onNavigate?.('analytics')}>
           <Activity className="w-4 h-4" />
           View Reports
         </Button>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
         {stats.map((stat) => {
           const Icon = stat.icon;
           return (
@@ -199,20 +252,94 @@ export const Dashboard: React.FC = () => {
         })}
       </div>
 
+      {/* AI Features Banner */}
+      <Card className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border-purple-200 dark:border-purple-800 shadow-lg hover:shadow-xl transition-shadow">
+        <CardContent className="p-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center flex-shrink-0 shadow-lg">
+                <Brain className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+                    AI-Powered Insights
+                  </h3>
+                  <Badge variant="secondary" className="gap-1">
+                    <Sparkles className="w-3 h-3" />
+                    New
+                  </Badge>
+                </div>
+                <p className="text-sm text-slate-600 dark:text-slate-300">
+                  Get real-time predictions, smart recommendations, and automated alerts powered by artificial intelligence
+                </p>
+                <div className="flex flex-wrap gap-2 mt-3">
+                  <Badge variant="outline" className="text-xs">
+                    <Zap className="w-3 h-3 mr-1" />
+                    Real-time Updates
+                  </Badge>
+                  <Badge variant="outline" className="text-xs">
+                    <Activity className="w-3 h-3 mr-1" />
+                    Predictive Analytics
+                  </Badge>
+                  <Badge variant="outline" className="text-xs">
+                    <AlertTriangle className="w-3 h-3 mr-1" />
+                    Smart Alerts
+                  </Badge>
+                </div>
+              </div>
+            </div>
+            <Button 
+              size="lg" 
+              className="gap-2 w-full sm:w-auto bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+              onClick={() => onNavigate?.('ai-dashboard')}
+            >
+              <Brain className="w-5 h-5" />
+              Explore AI Dashboard
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* AI Widgets Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <RealTimeStockUpdates />
+        <AIAlertsPanel />
+      </div>
+
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Revenue Trend Chart */}
         <Card className="shadow-lg hover:shadow-xl transition-shadow">
           <CardHeader className="p-4 sm:p-6">
-            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-              <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 flex-shrink-0" />
-              Revenue Trend
-            </CardTitle>
-            <p className="text-xs sm:text-sm text-slate-500">Monthly revenue and order statistics</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                  <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 flex-shrink-0" />
+                  Revenue Trend
+                </CardTitle>
+                <p className="text-xs sm:text-sm text-slate-500">Monthly revenue and order statistics</p>
+              </div>
+              <div className="flex gap-1">
+                {(['7d', '30d', '90d', '1y'] as const).map(range => (
+                  <button
+                    key={range}
+                    onClick={() => setDashboardRange(range)}
+                    className={`px-2 py-1 text-xs rounded font-medium transition-colors ${
+                      dashboardRange === range
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    }`}
+                  >
+                    {range}
+                  </button>
+                ))}
+              </div>
+            </div>
           </CardHeader>
           <CardContent className="p-4 sm:p-6 pt-0">
             <ResponsiveContainer width="100%" height={250}>
-              <AreaChart data={revenueData}>
+              <AreaChart data={revenueDataMap[dashboardRange]}>
                 <defs>
                   <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
@@ -220,24 +347,24 @@ export const Dashboard: React.FC = () => {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis dataKey="month" stroke="#64748b" tick={{ fontSize: 12 }} />
+                <XAxis dataKey="label" stroke="#64748b" tick={{ fontSize: 12 }} />
                 <YAxis stroke="#64748b" tick={{ fontSize: 12 }} />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: 'white', 
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'white',
                     border: '1px solid #e2e8f0',
                     borderRadius: '8px',
                     boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
                     fontSize: '12px'
                   }}
                 />
-                <Area 
-                  type="monotone" 
-                  dataKey="revenue" 
-                  stroke="#3b82f6" 
+                <Area
+                  type="monotone"
+                  dataKey="revenue"
+                  stroke="#3b82f6"
                   strokeWidth={2}
-                  fillOpacity={1} 
-                  fill="url(#colorRevenue)" 
+                  fillOpacity={1}
+                  fill="url(#colorRevenue)"
                 />
               </AreaChart>
             </ResponsiveContainer>
@@ -270,7 +397,7 @@ export const Dashboard: React.FC = () => {
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip 
+                <Tooltip
                   contentStyle={{
                     fontSize: '12px'
                   }}
@@ -296,9 +423,9 @@ export const Dashboard: React.FC = () => {
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
               <XAxis dataKey="name" stroke="#64748b" tick={{ fontSize: 12 }} />
               <YAxis stroke="#64748b" tick={{ fontSize: 12 }} />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'white', 
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: 'white',
                   border: '1px solid #e2e8f0',
                   borderRadius: '8px',
                   boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
@@ -333,7 +460,7 @@ export const Dashboard: React.FC = () => {
           ) : (
             <div className="space-y-3">
               {topSellingProducts.map((item, index) => (
-                <div 
+                <div
                   key={item.product.id}
                   className="flex items-center gap-3 sm:gap-4 p-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200 hover:shadow-md transition-all hover:scale-105"
                 >
@@ -391,15 +518,15 @@ export const Dashboard: React.FC = () => {
               ) : (
                 <div className="space-y-3">
                   {lowStockProducts.map((product) => (
-                    <div 
+                    <div
                       key={product.id}
                       className="flex items-center justify-between p-3 bg-gradient-to-r from-orange-50 to-red-50 rounded-lg border border-orange-200 hover:shadow-md transition-all hover:scale-105"
                     >
                       <div className="flex-1 min-w-0 mr-3">
                         <p className="font-medium text-slate-900 text-sm sm:text-base truncate">{product.name}</p>
                         <p className="text-xs text-slate-500">SKU: {product.sku}</p>
-                        <Progress 
-                          value={(product.quantity / product.minStockLevel) * 100} 
+                        <Progress
+                          value={(product.quantity / product.minStockLevel) * 100}
                           className="h-1.5 mt-2"
                         />
                       </div>
@@ -411,6 +538,10 @@ export const Dashboard: React.FC = () => {
                   ))}
                 </div>
               )}
+              <Button variant="outline" className="w-full mt-3 text-sm gap-2" onClick={() => onNavigate?.('low-stock-alerts')}>
+                View All Alerts
+                <ArrowUpRight className="w-4 h-4" />
+              </Button>
             </CardContent>
           </Card>
         </div>
@@ -427,7 +558,7 @@ export const Dashboard: React.FC = () => {
             <CardContent className="p-4 sm:p-6 pt-0">
               <div className="space-y-3">
                 {recentTransactions.map((transaction) => (
-                  <div 
+                  <div
                     key={transaction.id}
                     className="flex items-center gap-3 sm:gap-4 p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-all hover:scale-105 cursor-pointer"
                   >
@@ -459,7 +590,7 @@ export const Dashboard: React.FC = () => {
                   </div>
                 ))}
               </div>
-              <Button variant="outline" className="w-full mt-4 gap-2 text-sm sm:text-base">
+              <Button variant="outline" className="w-full mt-4 gap-2 text-sm sm:text-base" onClick={() => onNavigate?.('transactions')}>
                 View All Activity
                 <ArrowUpRight className="w-4 h-4" />
               </Button>

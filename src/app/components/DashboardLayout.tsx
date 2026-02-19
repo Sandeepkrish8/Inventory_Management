@@ -29,7 +29,9 @@ import {
   RotateCcw,
   UserCog,
   Warehouse,
-  TruckIcon
+  TruckIcon,
+  Brain,
+  Sparkles
 } from 'lucide-react';
 import { cn } from '@/app/components/ui/utils';
 import { Badge } from '@/app/components/ui/badge';
@@ -68,6 +70,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
   const allMenuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, allowedRoles: ['Admin', 'Staff', 'Viewer'] },
+    { id: 'ai-dashboard', label: 'AI Dashboard', icon: Brain, allowedRoles: ['Admin', 'Staff', 'Viewer'], badge: 'AI' },
     { id: 'analytics', label: 'Analytics', icon: BarChart3, allowedRoles: ['Admin', 'Staff', 'Viewer'] },
     { id: 'products', label: 'Products', icon: Package, allowedRoles: ['Admin', 'Staff', 'Viewer'] },
     { id: 'categories', label: 'Categories', icon: FolderTree, allowedRoles: ['Admin', 'Staff'] },
@@ -354,7 +357,19 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                     isActive ? "text-white scale-110" : "text-slate-600 dark:text-slate-400 group-hover:scale-110 group-hover:text-blue-600 dark:group-hover:text-blue-400"
                   )} />
                   <span className="font-semibold text-sm sm:text-base relative z-10">{item.label}</span>
-                  {isActive && (
+                  {(item as any).badge && (
+                    <Badge 
+                      variant={isActive ? "secondary" : "default"} 
+                      className={cn(
+                        "ml-auto text-[10px] h-5 px-1.5 relative z-10",
+                        isActive && "bg-white/20 text-white border-white/30"
+                      )}
+                    >
+                      <Sparkles className="w-3 h-3 mr-0.5" />
+                      {(item as any).badge}
+                    </Badge>
+                  )}
+                  {isActive && !(item as any).badge && (
                     <div className="ml-auto w-2 h-2 rounded-full bg-white shadow-lg shadow-white/50 animate-pulse relative z-10" />
                   )}
                 </button>

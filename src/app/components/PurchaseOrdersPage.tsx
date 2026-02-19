@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { PurchaseOrder, PurchaseOrderStatus } from '@/app/types';
+import { PurchaseOrder, PurchaseOrderStatus, PurchaseOrderItem } from '@/app/types';
+import { mockPurchaseOrders, mockSuppliers, mockProducts } from '@/app/data/mockData';
 import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/app/components/ui/card';
@@ -41,41 +42,220 @@ import {
   Clock,
   XCircle,
   Package,
-  TrendingUp
+  TrendingUp,
+  DollarSign,
+  Trash2,
 } from 'lucide-react';
 import { useAuth } from '@/app/contexts/AuthContext';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { AccessDenied } from '@/app/components/AccessDenied';
 
+// ── Form state types ──────────────────────────────────────────────────────────
+
+interface CreatePOLineItem {
+  productId: string;
+  productName: string;
+  quantity: number;
+  unitPrice: number;
+  total: number;
+}
+
+interface CreatePOFormState {
+  supplierId: string;
+  supplierName: string;
+  expectedDate: string;
+  notes: string;
+  lineItems: CreatePOLineItem[];
+}
+
+const emptyForm = (): CreatePOFormState => ({
+  supplierId: '',
+  supplierName: '',
+  expectedDate: '',
+  notes: '',
+  lineItems: [{ productId: '', productName: '', quantity: 1, unitPrice: 0, total: 0 }],
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 export const PurchaseOrdersPage: React.FC = () => {
   const { user } = useAuth();
-  
+
   // Block Viewer role from accessing this page
   if (user?.role === 'Viewer') {
     return <AccessDenied message="You don't have permission to access this page. This page is restricted to Staff and Admin users only." />;
   }
-  
-  const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([]);
+
+  const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>(mockPurchaseOrders);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | PurchaseOrderStatus>('all');
   const [selectedPO, setSelectedPO] = useState<PurchaseOrder | null>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [createPOOpen, setCreatePOOpen] = useState(false);
+  const [createForm, setCreateForm] = useState<CreatePOFormState>(emptyForm());
 
   const canEdit = user?.role === 'Admin' || user?.role === 'Staff';
 
+  // ── Derived stats ───────────────────────────────────────────────────────────
+
+  const stats = {
+    total: purchaseOrders.length,
+    pending: purchaseOrders.filter(po => po.status === 'Pending').length,
+    approved: purchaseOrders.filter(po => po.status === 'Approved').length,
+    received: purchaseOrders.filter(po => po.status === 'Received').length,
+  };
+
+  const totalValue = purchaseOrders
+    .filter(po => po.status !== 'Cancelled')
+    .reduce((sum, po) => sum + po.total, 0);
+
+  // ── Filtering ───────────────────────────────────────────────────────────────
+
   const filteredPOs = purchaseOrders.filter((po) => {
-    const matchesSearch = 
+    const matchesSearch =
       po.poNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
       po.supplierName.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === 'all' || po.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
+  // ── Handlers ────────────────────────────────────────────────────────────────
+
   const handleViewPO = (po: PurchaseOrder) => {
     setSelectedPO(po);
     setViewDialogOpen(true);
   };
+
+  const handleStatusUpdate = (poId: string, newStatus: PurchaseOrderStatus) => {
+    setPurchaseOrders(pos =>
+      pos.map(po =>
+        po.id === poId
+          ? {
+              ...po,
+              status: newStatus,
+              receivedDate:
+                newStatus === 'Received' ? new Date().toISOString() : po.receivedDate,
+            }
+          : po
+      )
+    );
+    toast.success(`PO status updated to ${newStatus}`);
+    setViewDialogOpen(false);
+  };
+
+  const handleCreatePO = (status: PurchaseOrderStatus) => {
+    if (!createForm.supplierId) {
+      toast.error('Please select a supplier.');
+      return;
+    }
+    if (createForm.lineItems.some(li => !li.productId || li.quantity <= 0)) {
+      toast.error('Please fill in all line items with a product and valid quantity.');
+      return;
+    }
+
+    const validItems: PurchaseOrderItem[] = createForm.lineItems
+      .filter(li => li.productId)
+      .map(li => ({
+        productId: li.productId,
+        productName: li.productName,
+        quantity: li.quantity,
+        unitPrice: li.unitPrice,
+        total: li.quantity * li.unitPrice,
+      }));
+
+    const total = validItems.reduce((sum, item) => sum + item.total, 0);
+
+    const newPO: PurchaseOrder = {
+      id: `PO-${Date.now()}`,
+      poNumber: `PO-${new Date().getFullYear()}-${String(purchaseOrders.length + 1).padStart(3, '0')}`,
+      supplierId: createForm.supplierId,
+      supplierName: createForm.supplierName,
+      items: validItems,
+      total,
+      status,
+      orderDate: new Date().toISOString(),
+      expectedDate: createForm.expectedDate ? new Date(createForm.expectedDate).toISOString() : undefined,
+      notes: createForm.notes || undefined,
+      createdBy: user?.name ?? 'Unknown',
+    };
+
+    setPurchaseOrders(prev => [newPO, ...prev]);
+    toast.success(`Purchase order ${newPO.poNumber} created as ${status}.`);
+    setCreatePOOpen(false);
+    setCreateForm(emptyForm());
+  };
+
+  // ── Create-PO form helpers ──────────────────────────────────────────────────
+
+  const handleSupplierChange = (supplierId: string) => {
+    const supplier = mockSuppliers.find(s => s.id === supplierId);
+    setCreateForm(f => ({
+      ...f,
+      supplierId,
+      supplierName: supplier?.name ?? '',
+    }));
+  };
+
+  const handleLineItemProductChange = (index: number, productId: string) => {
+    const product = mockProducts.find(p => p.id === productId);
+    setCreateForm(f => {
+      const lineItems = [...f.lineItems];
+      lineItems[index] = {
+        ...lineItems[index],
+        productId,
+        productName: product?.name ?? '',
+        unitPrice: product?.unitPrice ?? 0,
+        total: (lineItems[index].quantity) * (product?.unitPrice ?? 0),
+      };
+      return { ...f, lineItems };
+    });
+  };
+
+  const handleLineItemQuantityChange = (index: number, quantity: number) => {
+    setCreateForm(f => {
+      const lineItems = [...f.lineItems];
+      lineItems[index] = {
+        ...lineItems[index],
+        quantity,
+        total: quantity * lineItems[index].unitPrice,
+      };
+      return { ...f, lineItems };
+    });
+  };
+
+  const handleLineItemUnitPriceChange = (index: number, unitPrice: number) => {
+    setCreateForm(f => {
+      const lineItems = [...f.lineItems];
+      lineItems[index] = {
+        ...lineItems[index],
+        unitPrice,
+        total: lineItems[index].quantity * unitPrice,
+      };
+      return { ...f, lineItems };
+    });
+  };
+
+  const handleAddLineItem = () => {
+    setCreateForm(f => ({
+      ...f,
+      lineItems: [
+        ...f.lineItems,
+        { productId: '', productName: '', quantity: 1, unitPrice: 0, total: 0 },
+      ],
+    }));
+  };
+
+  const handleRemoveLineItem = (index: number) => {
+    setCreateForm(f => ({
+      ...f,
+      lineItems: f.lineItems.filter((_, i) => i !== index),
+    }));
+  };
+
+  const createFormTotal = createForm.lineItems.reduce((sum, li) => sum + li.total, 0);
+
+  // ── Status badge ────────────────────────────────────────────────────────────
 
   const getStatusBadge = (status: PurchaseOrderStatus) => {
     const variants = {
@@ -97,12 +277,24 @@ export const PurchaseOrdersPage: React.FC = () => {
     );
   };
 
-  const stats = {
-    total: purchaseOrders.length,
-    pending: purchaseOrders.filter(po => po.status === 'Pending').length,
-    approved: purchaseOrders.filter(po => po.status === 'Approved').length,
-    received: purchaseOrders.filter(po => po.status === 'Received').length,
+  // ── Status progression helper ───────────────────────────────────────────────
+
+  const getNextAction = (
+    status: PurchaseOrderStatus
+  ): { label: string; next: PurchaseOrderStatus } | null => {
+    switch (status) {
+      case 'Draft':
+        return { label: 'Submit for Approval', next: 'Pending' };
+      case 'Pending':
+        return { label: 'Approve PO', next: 'Approved' };
+      case 'Approved':
+        return { label: 'Mark as Received', next: 'Received' };
+      default:
+        return null;
+    }
   };
+
+  // ── Render ──────────────────────────────────────────────────────────────────
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -120,7 +312,7 @@ export const PurchaseOrdersPage: React.FC = () => {
           </p>
         </div>
         {canEdit && (
-          <Button className="gap-2" onClick={() => toast.info('Create PO feature coming soon')}>
+          <Button className="gap-2" onClick={() => setCreatePOOpen(true)}>
             <Plus className="w-4 h-4" />
             New Purchase Order
           </Button>
@@ -180,13 +372,13 @@ export const PurchaseOrdersPage: React.FC = () => {
         <Card>
           <CardContent className="p-4 sm:p-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-50 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
-                <Package className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg flex items-center justify-center">
+                <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600" />
               </div>
               <div>
-                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Received</p>
+                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Total Value</p>
                 <p className="text-xl sm:text-2xl font-semibold text-slate-900 dark:text-white">
-                  {stats.received}
+                  ${totalValue.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                 </p>
               </div>
             </div>
@@ -236,10 +428,10 @@ export const PurchaseOrdersPage: React.FC = () => {
               <FileText className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
               <p className="text-slate-500 dark:text-slate-400">No purchase orders found</p>
               {canEdit && (
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="mt-4"
-                  onClick={() => toast.info('Create PO feature coming soon')}
+                  onClick={() => setCreatePOOpen(true)}
                 >
                   Create Your First PO
                 </Button>
@@ -285,7 +477,7 @@ export const PurchaseOrdersPage: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* View PO Dialog */}
+      {/* ── View PO Dialog ─────────────────────────────────────────────────── */}
       <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -316,6 +508,18 @@ export const PurchaseOrdersPage: React.FC = () => {
                   <Label className="text-xs text-slate-500">Created By</Label>
                   <p className="font-medium">{selectedPO.createdBy}</p>
                 </div>
+                {selectedPO.expectedDate && (
+                  <div>
+                    <Label className="text-xs text-slate-500">Expected Delivery</Label>
+                    <p className="font-medium">{format(new Date(selectedPO.expectedDate), 'MMM dd, yyyy')}</p>
+                  </div>
+                )}
+                {selectedPO.receivedDate && (
+                  <div>
+                    <Label className="text-xs text-slate-500">Received Date</Label>
+                    <p className="font-medium">{format(new Date(selectedPO.receivedDate), 'MMM dd, yyyy')}</p>
+                  </div>
+                )}
               </div>
 
               <Separator />
@@ -363,9 +567,230 @@ export const PurchaseOrdersPage: React.FC = () => {
               )}
             </div>
           )}
-          <DialogFooter>
+          <DialogFooter className="flex flex-wrap gap-2 sm:justify-end">
+            {canEdit && selectedPO && (() => {
+              const nextAction = getNextAction(selectedPO.status);
+              const canCancel =
+                selectedPO.status !== 'Received' && selectedPO.status !== 'Cancelled';
+              return (
+                <>
+                  {canCancel && (
+                    <Button
+                      variant="destructive"
+                      onClick={() => handleStatusUpdate(selectedPO.id, 'Cancelled')}
+                    >
+                      <XCircle className="w-4 h-4 mr-1" />
+                      Cancel PO
+                    </Button>
+                  )}
+                  {nextAction && (
+                    <Button
+                      onClick={() => handleStatusUpdate(selectedPO.id, nextAction.next)}
+                    >
+                      <CheckCircle className="w-4 h-4 mr-1" />
+                      {nextAction.label}
+                    </Button>
+                  )}
+                </>
+              );
+            })()}
             <Button variant="outline" onClick={() => setViewDialogOpen(false)}>
               Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Create PO Dialog ───────────────────────────────────────────────── */}
+      <Dialog open={createPOOpen} onOpenChange={(open) => {
+        setCreatePOOpen(open);
+        if (!open) setCreateForm(emptyForm());
+      }}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Plus className="w-5 h-5 text-blue-600" />
+              Create New Purchase Order
+            </DialogTitle>
+            <DialogDescription>
+              Fill in the details below to create a new purchase order.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-5">
+            {/* Supplier & Expected Delivery */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="create-supplier">Supplier <span className="text-red-500">*</span></Label>
+                <Select
+                  value={createForm.supplierId}
+                  onValueChange={handleSupplierChange}
+                >
+                  <SelectTrigger id="create-supplier">
+                    <SelectValue placeholder="Select a supplier" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {mockSuppliers.map(s => (
+                      <SelectItem key={s.id} value={s.id}>
+                        {s.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="create-expected-date">Expected Delivery Date</Label>
+                <Input
+                  id="create-expected-date"
+                  type="date"
+                  value={createForm.expectedDate}
+                  onChange={e => setCreateForm(f => ({ ...f, expectedDate: e.target.value }))}
+                />
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Line Items */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-semibold">Line Items <span className="text-red-500">*</span></Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleAddLineItem}
+                  className="gap-1"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  Add Item
+                </Button>
+              </div>
+
+              {/* Header row (desktop) */}
+              <div className="hidden sm:grid sm:grid-cols-[1fr_100px_110px_100px_36px] gap-2 px-1">
+                <span className="text-xs font-medium text-slate-500">Product</span>
+                <span className="text-xs font-medium text-slate-500">Qty</span>
+                <span className="text-xs font-medium text-slate-500">Unit Price</span>
+                <span className="text-xs font-medium text-slate-500 text-right">Line Total</span>
+                <span />
+              </div>
+
+              {createForm.lineItems.map((item, index) => (
+                <div
+                  key={index}
+                  className="grid grid-cols-1 sm:grid-cols-[1fr_100px_110px_100px_36px] gap-2 items-center border border-slate-100 dark:border-slate-700 rounded-md p-2 sm:border-none sm:p-0"
+                >
+                  {/* Product select */}
+                  <Select
+                    value={item.productId}
+                    onValueChange={val => handleLineItemProductChange(index, val)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select product" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {mockProducts.map(p => (
+                        <SelectItem key={p.id} value={p.id}>
+                          {p.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  {/* Quantity */}
+                  <Input
+                    type="number"
+                    min={1}
+                    placeholder="Qty"
+                    value={item.quantity}
+                    onChange={e => handleLineItemQuantityChange(index, Number(e.target.value))}
+                  />
+
+                  {/* Unit Price */}
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">$</span>
+                    <Input
+                      type="number"
+                      min={0}
+                      step={0.01}
+                      placeholder="0.00"
+                      value={item.unitPrice}
+                      onChange={e => handleLineItemUnitPriceChange(index, Number(e.target.value))}
+                      className="pl-6"
+                    />
+                  </div>
+
+                  {/* Line Total (read-only) */}
+                  <div className="flex items-center justify-end">
+                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                      ${item.total.toFixed(2)}
+                    </span>
+                  </div>
+
+                  {/* Remove button */}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-slate-400 hover:text-red-500 justify-self-end sm:justify-self-auto"
+                    onClick={() => handleRemoveLineItem(index)}
+                    disabled={createForm.lineItems.length === 1}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+
+            {/* PO Total Summary */}
+            <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4">
+              <div className="flex justify-between items-center">
+                <span className="font-semibold text-slate-700 dark:text-slate-300">PO Total:</span>
+                <span className="text-xl font-bold text-blue-600">
+                  ${createFormTotal.toFixed(2)}
+                </span>
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Notes */}
+            <div className="space-y-1.5">
+              <Label htmlFor="create-notes">Notes</Label>
+              <Textarea
+                id="create-notes"
+                placeholder="Add any notes or special instructions..."
+                rows={3}
+                value={createForm.notes}
+                onChange={e => setCreateForm(f => ({ ...f, notes: e.target.value }))}
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="flex flex-wrap gap-2 sm:justify-end">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setCreatePOOpen(false);
+                setCreateForm(emptyForm());
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => handleCreatePO('Draft')}
+            >
+              <FileText className="w-4 h-4 mr-1" />
+              Save as Draft
+            </Button>
+            <Button
+              onClick={() => handleCreatePO('Pending')}
+            >
+              <CheckCircle className="w-4 h-4 mr-1" />
+              Submit for Approval
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Invoice, InvoiceStatus } from '@/app/types';
+import { mockInvoices, mockCustomers, mockProducts } from '@/app/data/mockData';
 import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/app/components/ui/card';
@@ -30,6 +31,7 @@ import {
 } from '@/app/components/ui/dialog';
 import { Label } from '@/app/components/ui/label';
 import { Separator } from '@/app/components/ui/separator';
+import { Textarea } from '@/app/components/ui/textarea';
 import {
   Search,
   Plus,
@@ -42,7 +44,9 @@ import {
   XCircle,
   DollarSign,
   Download,
-  Send
+  Send,
+  Printer,
+  Trash2
 } from 'lucide-react';
 import { useAuth } from '@/app/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -51,11 +55,21 @@ import { AccessDenied } from '@/app/components/AccessDenied';
 
 export const InvoicingPage: React.FC = () => {
   const { user } = useAuth();
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [invoices, setInvoices] = useState<Invoice[]>(mockInvoices);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | InvoiceStatus>('all');
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [invoiceForm, setInvoiceForm] = useState({
+    customerName: '',
+    customerId: '',
+    dueInDays: 30,
+    taxRate: 8,
+    paymentMethod: 'Bank Transfer' as string,
+    notes: '',
+    items: [] as Array<{ productId: string; productName: string; quantity: number; unitPrice: number; tax: number }>,
+  });
 
   // Admin-only access control
   if (user?.role !== 'Admin') {
@@ -65,7 +79,7 @@ export const InvoicingPage: React.FC = () => {
   const canEdit = user?.role === 'Admin' || user?.role === 'Staff';
 
   const filteredInvoices = invoices.filter((invoice) => {
-    const matchesSearch = 
+    const matchesSearch =
       invoice.invoiceNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
       invoice.customerName.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === 'all' || invoice.status === statusFilter;
@@ -78,16 +92,49 @@ export const InvoicingPage: React.FC = () => {
   };
 
   const handleStatusUpdate = (invoiceId: string, newStatus: InvoiceStatus) => {
-    setInvoices(invoices.map(inv => 
-      inv.id === invoiceId 
-        ? { 
-            ...inv, 
+    setInvoices(invoices.map(inv =>
+      inv.id === invoiceId
+        ? {
+            ...inv,
             status: newStatus,
             paidDate: newStatus === 'Paid' ? new Date().toISOString() : inv.paidDate
           }
         : inv
     ));
     toast.success(`Invoice status updated to ${newStatus}`);
+  };
+
+  const handleCreateInvoice = (status: InvoiceStatus) => {
+    if (!invoiceForm.customerName || invoiceForm.items.length === 0) return;
+    const subtotal = invoiceForm.items.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0);
+    const taxTotal = subtotal * (invoiceForm.taxRate / 100);
+    const grandTotal = subtotal + taxTotal;
+    const newInvoice: Invoice = {
+      id: `INV-${Date.now()}`,
+      invoiceNumber: `INV-2024-${String(invoices.length + 1).padStart(3, '0')}`,
+      customerId: invoiceForm.customerId,
+      customerName: invoiceForm.customerName,
+      items: invoiceForm.items.map(i => ({
+        productId: i.productId,
+        productName: i.productName,
+        quantity: i.quantity,
+        unitPrice: i.unitPrice,
+        tax: i.quantity * i.unitPrice * (invoiceForm.taxRate / 100),
+        total: i.quantity * i.unitPrice * (1 + invoiceForm.taxRate / 100),
+      })),
+      subtotal,
+      tax: taxTotal,
+      total: grandTotal,
+      status,
+      issueDate: new Date().toISOString(),
+      dueDate: new Date(Date.now() + invoiceForm.dueInDays * 86400000).toISOString(),
+      paymentMethod: invoiceForm.paymentMethod as any,
+      notes: invoiceForm.notes,
+    };
+    setInvoices([newInvoice, ...invoices]);
+    toast.success(`Invoice ${status === 'Draft' ? 'saved as draft' : 'created and sent'}`);
+    setCreateDialogOpen(false);
+    setInvoiceForm({ customerName: '', customerId: '', dueInDays: 30, taxRate: 8, paymentMethod: 'Bank Transfer', notes: '', items: [] });
   };
 
   const getStatusBadge = (status: InvoiceStatus) => {
@@ -135,7 +182,7 @@ export const InvoicingPage: React.FC = () => {
           </p>
         </div>
         {canEdit && (
-          <Button className="gap-2" onClick={() => toast.info('Create invoice feature coming soon')}>
+          <Button className="gap-2" onClick={() => setCreateDialogOpen(true)}>
             <Plus className="w-4 h-4" />
             New Invoice
           </Button>
@@ -251,10 +298,10 @@ export const InvoicingPage: React.FC = () => {
               <FileText className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
               <p className="text-slate-500 dark:text-slate-400">No invoices found</p>
               {canEdit && (
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="mt-4"
-                  onClick={() => toast.info('Create invoice feature coming soon')}
+                  onClick={() => setCreateDialogOpen(true)}
                 >
                   Create Your First Invoice
                 </Button>
@@ -284,7 +331,21 @@ export const InvoicingPage: React.FC = () => {
                       <TableCell className="font-semibold">${invoice.total.toFixed(2)}</TableCell>
                       <TableCell>{getStatusBadge(invoice.status)}</TableCell>
                       <TableCell className="text-right">
-                        <div className="flex justify-end gap-1">
+                        <div className="flex justify-end items-center gap-1">
+                          {canEdit && (
+                            <Select value={invoice.status} onValueChange={(v) => handleStatusUpdate(invoice.id, v as InvoiceStatus)}>
+                              <SelectTrigger className="w-28 h-7 text-xs">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Draft">Draft</SelectItem>
+                                <SelectItem value="Sent">Sent</SelectItem>
+                                <SelectItem value="Paid">Paid</SelectItem>
+                                <SelectItem value="Overdue">Overdue</SelectItem>
+                                <SelectItem value="Cancelled">Cancelled</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          )}
                           <Button
                             variant="ghost"
                             size="sm"
@@ -454,11 +515,170 @@ export const InvoicingPage: React.FC = () => {
             <Button variant="outline" onClick={() => setViewDialogOpen(false)}>
               Close
             </Button>
-            <Button onClick={() => toast.info('Download PDF feature coming soon')}>
-              <Download className="w-4 h-4 mr-2" />
-              Download PDF
+            <Button onClick={() => {
+              const win = window.open('', '_blank');
+              if (win && selectedInvoice) {
+                win.document.write(`
+                  <html>
+                    <head>
+                      <title>Invoice ${selectedInvoice.invoiceNumber}</title>
+                      <style>
+                        body { font-family: sans-serif; padding: 40px; color: #1e293b; }
+                        h1 { color: #2563eb; }
+                        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+                        th, td { border: 1px solid #e2e8f0; padding: 8px 12px; text-align: left; }
+                        th { background: #f8fafc; }
+                        .total { font-size: 1.25rem; font-weight: bold; }
+                      </style>
+                    </head>
+                    <body>
+                      <h1>INVOICE</h1>
+                      <p><strong>Invoice #:</strong> ${selectedInvoice.invoiceNumber}</p>
+                      <p><strong>Bill To:</strong> ${selectedInvoice.customerName}</p>
+                      <p><strong>Issue Date:</strong> ${new Date(selectedInvoice.issueDate).toLocaleDateString()}</p>
+                      <p><strong>Due Date:</strong> ${new Date(selectedInvoice.dueDate).toLocaleDateString()}</p>
+                      <table>
+                        <thead><tr><th>Product</th><th>Qty</th><th>Unit Price</th><th>Tax</th><th>Total</th></tr></thead>
+                        <tbody>
+                          ${selectedInvoice.items.map(i => `<tr><td>${i.productName}</td><td>${i.quantity}</td><td>$${i.unitPrice.toFixed(2)}</td><td>$${i.tax.toFixed(2)}</td><td>$${i.total.toFixed(2)}</td></tr>`).join('')}
+                        </tbody>
+                      </table>
+                      <p>Subtotal: $${selectedInvoice.subtotal.toFixed(2)}</p>
+                      <p>Tax: $${selectedInvoice.tax.toFixed(2)}</p>
+                      <p class="total">TOTAL: $${selectedInvoice.total.toFixed(2)}</p>
+                    </body>
+                  </html>
+                `);
+                win.print();
+              }
+            }}>
+              <Printer className="w-4 h-4 mr-2" />
+              Print Invoice
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Invoice Dialog */}
+      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Create New Invoice</DialogTitle>
+            <DialogDescription>Fill in the invoice details</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {/* Customer */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Customer</Label>
+                <Select value={invoiceForm.customerId} onValueChange={(id) => {
+                  const c = mockCustomers?.find(c => c.id === id);
+                  setInvoiceForm({ ...invoiceForm, customerId: id, customerName: c?.name || '' });
+                }}>
+                  <SelectTrigger><SelectValue placeholder="Select customer..." /></SelectTrigger>
+                  <SelectContent>
+                    {(mockCustomers || []).map(c => (
+                      <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Payment Method</Label>
+                <Select value={invoiceForm.paymentMethod} onValueChange={(v) => setInvoiceForm({ ...invoiceForm, paymentMethod: v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Bank Transfer">Bank Transfer</SelectItem>
+                    <SelectItem value="Cash">Cash</SelectItem>
+                    <SelectItem value="Credit Card">Credit Card</SelectItem>
+                    <SelectItem value="Cheque">Cheque</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Due In (Days)</Label>
+                <Input type="number" min="1" value={invoiceForm.dueInDays} onChange={(e) => setInvoiceForm({ ...invoiceForm, dueInDays: parseInt(e.target.value) || 30 })} />
+              </div>
+              <div className="space-y-2">
+                <Label>Tax Rate (%)</Label>
+                <Input type="number" min="0" max="100" value={invoiceForm.taxRate} onChange={(e) => setInvoiceForm({ ...invoiceForm, taxRate: parseFloat(e.target.value) || 0 })} />
+              </div>
+            </div>
+
+            {/* Add Item */}
+            <div className="space-y-2">
+              <Label>Add Product</Label>
+              <Select onValueChange={(productId) => {
+                const product = mockProducts.find(p => p.id === productId);
+                if (product) {
+                  setInvoiceForm(prev => ({
+                    ...prev,
+                    items: [...prev.items, { productId: product.id, productName: product.name, quantity: 1, unitPrice: product.sellingPrice, tax: invoiceForm.taxRate }]
+                  }));
+                }
+              }}>
+                <SelectTrigger><SelectValue placeholder="Select product to add..." /></SelectTrigger>
+                <SelectContent>
+                  {mockProducts.map(p => (
+                    <SelectItem key={p.id} value={p.id}>{p.name} — ${p.sellingPrice.toFixed(2)}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Line Items */}
+            {invoiceForm.items.length > 0 && (
+              <div className="space-y-2">
+                <Label>Invoice Items</Label>
+                {invoiceForm.items.map((item, index) => (
+                  <div key={index} className="flex items-center gap-2 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                    <span className="flex-1 text-sm font-medium">{item.productName}</span>
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs text-slate-500">Qty:</span>
+                      <Input type="number" min="1" value={item.quantity} onChange={(e) => {
+                        const qty = parseInt(e.target.value) || 1;
+                        setInvoiceForm(prev => ({ ...prev, items: prev.items.map((it, i) => i === index ? { ...it, quantity: qty } : it) }));
+                      }} className="w-16 h-8 text-sm" />
+                    </div>
+                    <span className="text-sm text-slate-600 w-20 text-right">${(item.quantity * item.unitPrice).toFixed(2)}</span>
+                    <Button variant="ghost" size="sm" onClick={() => setInvoiceForm(prev => ({ ...prev, items: prev.items.filter((_, i) => i !== index) }))}>
+                      <Trash2 className="w-4 h-4 text-red-500" />
+                    </Button>
+                  </div>
+                ))}
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg space-y-1 text-sm">
+                  {(() => {
+                    const subtotal = invoiceForm.items.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0);
+                    const tax = subtotal * (invoiceForm.taxRate / 100);
+                    return (
+                      <>
+                        <div className="flex justify-between"><span className="text-slate-500">Subtotal</span><span>${subtotal.toFixed(2)}</span></div>
+                        <div className="flex justify-between"><span className="text-slate-500">Tax ({invoiceForm.taxRate}%)</span><span>${tax.toFixed(2)}</span></div>
+                        <Separator className="my-1" />
+                        <div className="flex justify-between font-bold text-base"><span>Total</span><span className="text-blue-600">${(subtotal + tax).toFixed(2)}</span></div>
+                      </>
+                    );
+                  })()}
+                </div>
+              </div>
+            )}
+
+            {/* Notes */}
+            <div className="space-y-2">
+              <Label>Notes</Label>
+              <Textarea placeholder="Optional notes..." value={invoiceForm.notes} onChange={(e) => setInvoiceForm({ ...invoiceForm, notes: e.target.value })} rows={2} />
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2 pt-4">
+            <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => handleCreateInvoice('Draft')} disabled={!invoiceForm.customerName || invoiceForm.items.length === 0}>
+              Save as Draft
+            </Button>
+            <Button onClick={() => handleCreateInvoice('Sent')} disabled={!invoiceForm.customerName || invoiceForm.items.length === 0}>
+              Create & Send
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

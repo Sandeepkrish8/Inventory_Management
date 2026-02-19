@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/app/components/ui/card';
 import { QuickStat } from '@/app/components/QuickStats';
-import { 
-  TrendingUp, 
-  Package, 
-  DollarSign, 
+import {
+  TrendingUp,
+  Package,
+  DollarSign,
   ShoppingCart,
   ArrowUpRight,
   ArrowDownRight,
@@ -12,7 +12,8 @@ import {
   Activity,
   BarChart3,
   PieChart as PieChartIcon,
-  Calendar
+  Calendar,
+  Download
 } from 'lucide-react';
 import {
   LineChart,
@@ -38,27 +39,67 @@ import {
 } from 'recharts';
 import { Button } from '@/app/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/app/components/ui/tabs';
+import { Progress } from '@/app/components/ui/progress';
+import { Switch } from '@/app/components/ui/switch';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/app/components/ui/table';
 import { mockProducts, mockOrders, mockTransactions } from '@/app/data/mockData';
+import { toast } from 'sonner';
 
 export const AnalyticsPage: React.FC = () => {
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | '1y'>('30d');
+  const [compareEnabled, setCompareEnabled] = useState(false);
 
-  // Calculate analytics data
-  const totalRevenue = mockOrders.reduce((sum, order) => sum + order.total, 0);
+  // Sales trend data map keyed by time range
+  const salesTrendDataMap: Record<string, Array<{date: string; sales: number; orders: number; customers: number}>> = {
+    '7d': [
+      { date: 'Mon', sales: 1100, orders: 4, customers: 3 },
+      { date: 'Tue', sales: 1450, orders: 5, customers: 4 },
+      { date: 'Wed', sales: 980, orders: 3, customers: 2 },
+      { date: 'Thu', sales: 1720, orders: 6, customers: 5 },
+      { date: 'Fri', sales: 2100, orders: 7, customers: 6 },
+      { date: 'Sat', sales: 2450, orders: 8, customers: 7 },
+      { date: 'Sun', sales: 1800, orders: 6, customers: 5 },
+    ],
+    '30d': [
+      { date: 'Wk 1', sales: 6200, orders: 18, customers: 14 },
+      { date: 'Wk 2', sales: 7100, orders: 21, customers: 16 },
+      { date: 'Wk 3', sales: 8500, orders: 25, customers: 19 },
+      { date: 'Wk 4', sales: 9200, orders: 28, customers: 21 },
+    ],
+    '90d': [
+      { date: 'Month 1', sales: 22000, orders: 65, customers: 48 },
+      { date: 'Month 2', sales: 28500, orders: 84, customers: 62 },
+      { date: 'Month 3', sales: 31200, orders: 92, customers: 71 },
+    ],
+    '1y': [
+      { date: 'Jan', sales: 4200, orders: 12, customers: 8 },
+      { date: 'Feb', sales: 5100, orders: 15, customers: 11 },
+      { date: 'Mar', sales: 4800, orders: 14, customers: 10 },
+      { date: 'Apr', sales: 6200, orders: 18, customers: 14 },
+      { date: 'May', sales: 7100, orders: 21, customers: 16 },
+      { date: 'Jun', sales: 6900, orders: 19, customers: 15 },
+      { date: 'Jul', sales: 8200, orders: 24, customers: 18 },
+      { date: 'Aug', sales: 7800, orders: 23, customers: 17 },
+      { date: 'Sep', sales: 9100, orders: 27, customers: 21 },
+      { date: 'Oct', sales: 10200, orders: 30, customers: 23 },
+      { date: 'Nov', sales: 11500, orders: 34, customers: 26 },
+      { date: 'Dec', sales: 13200, orders: 39, customers: 30 },
+    ],
+  };
+
+  const activeSalesData = salesTrendDataMap[timeRange];
+
+  // Calculate KPIs from active dataset
+  const totalRevenue = activeSalesData.reduce((sum, d) => sum + d.sales, 0);
+  const totalOrdersCount = activeSalesData.reduce((sum, d) => sum + d.orders, 0);
+  const avgOrderValue = totalRevenue / totalOrdersCount;
   const totalProducts = mockProducts.length;
-  const totalOrders = mockOrders.length;
-  const avgOrderValue = totalRevenue / totalOrders;
 
-  // Sales trend data
-  const salesTrendData = [
-    { date: 'Mon', sales: 4200, orders: 12, customers: 8 },
-    { date: 'Tue', sales: 5100, orders: 15, customers: 11 },
-    { date: 'Wed', sales: 4800, orders: 14, customers: 10 },
-    { date: 'Thu', sales: 6200, orders: 18, customers: 14 },
-    { date: 'Fri', sales: 7100, orders: 21, customers: 16 },
-    { date: 'Sat', sales: 8500, orders: 25, customers: 19 },
-    { date: 'Sun', sales: 6900, orders: 19, customers: 15 },
-  ];
+  // Prior period data for comparison
+  const priorPeriodData = activeSalesData.map(row => ({
+    ...row,
+    priorSales: Math.round(row.sales * 0.82),
+  }));
 
   // Category performance
   const categoryPerformance = [
@@ -96,6 +137,23 @@ export const AnalyticsPage: React.FC = () => {
 
   const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
 
+  // CSV export handler
+  const handleExportCSV = () => {
+    const data = activeSalesData;
+    const csv = [
+      'Period,Sales,Orders,Customers',
+      ...data.map(row => `${row.date},${row.sales},${row.orders},${row.customers}`)
+    ].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `analytics-${timeRange}-${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success('CSV export started');
+  };
+
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Header */}
@@ -109,7 +167,7 @@ export const AnalyticsPage: React.FC = () => {
             Comprehensive insights and performance metrics
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {(['7d', '30d', '90d', '1y'] as const).map((range) => (
             <Button
               key={range}
@@ -121,6 +179,20 @@ export const AnalyticsPage: React.FC = () => {
               {range === '7d' ? '7 Days' : range === '30d' ? '30 Days' : range === '90d' ? '90 Days' : '1 Year'}
             </Button>
           ))}
+          <Button variant="outline" size="sm" onClick={handleExportCSV} className="gap-2 text-xs sm:text-sm">
+            <Download className="w-4 h-4" />
+            Export CSV
+          </Button>
+          <div className="flex items-center gap-2">
+            <Switch
+              checked={compareEnabled}
+              onCheckedChange={setCompareEnabled}
+              id="compare-toggle"
+            />
+            <label htmlFor="compare-toggle" className="text-xs sm:text-sm text-slate-600 cursor-pointer whitespace-nowrap">
+              Compare period
+            </label>
+          </div>
         </div>
       </div>
 
@@ -130,21 +202,21 @@ export const AnalyticsPage: React.FC = () => {
           title="Total Revenue"
           value={`$${totalRevenue.toLocaleString()}`}
           icon={DollarSign}
-          trend={{ value: 12.5, label: 'vs last month' }}
+          trend={{ value: 12.5, label: 'vs last period' }}
           color="green"
         />
         <QuickStat
           title="Total Orders"
-          value={totalOrders}
+          value={totalOrdersCount}
           icon={ShoppingCart}
-          trend={{ value: 8.2, label: 'vs last month' }}
+          trend={{ value: 8.2, label: 'vs last period' }}
           color="blue"
         />
         <QuickStat
           title="Avg Order Value"
           value={`$${avgOrderValue.toFixed(2)}`}
           icon={TrendingUp}
-          trend={{ value: -3.1, label: 'vs last month' }}
+          trend={{ value: -3.1, label: 'vs last period' }}
           color="purple"
         />
         <QuickStat
@@ -176,7 +248,7 @@ export const AnalyticsPage: React.FC = () => {
             </CardHeader>
             <CardContent className="p-4 sm:p-6 pt-0">
               <ResponsiveContainer width="100%" height={300}>
-                <AreaChart data={salesTrendData}>
+                <AreaChart data={compareEnabled ? priorPeriodData : activeSalesData}>
                   <defs>
                     <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
@@ -203,6 +275,16 @@ export const AnalyticsPage: React.FC = () => {
                     fillOpacity={1}
                     fill="url(#colorSales)"
                   />
+                  {compareEnabled && (
+                    <Area
+                      dataKey="priorSales"
+                      stroke="#94a3b8"
+                      fill="none"
+                      strokeDasharray="4 4"
+                      strokeWidth={1.5}
+                      name="Prior Period"
+                    />
+                  )}
                 </AreaChart>
               </ResponsiveContainer>
             </CardContent>
@@ -285,7 +367,7 @@ export const AnalyticsPage: React.FC = () => {
             </CardHeader>
             <CardContent className="p-4 sm:p-6 pt-0">
               <ResponsiveContainer width="100%" height={350}>
-                <LineChart data={salesTrendData}>
+                <LineChart data={compareEnabled ? priorPeriodData : activeSalesData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                   <XAxis dataKey="date" stroke="#64748b" tick={{ fontSize: 12 }} />
                   <YAxis stroke="#64748b" tick={{ fontSize: 12 }} />
@@ -301,8 +383,49 @@ export const AnalyticsPage: React.FC = () => {
                   <Line type="monotone" dataKey="sales" stroke="#3b82f6" strokeWidth={2} />
                   <Line type="monotone" dataKey="orders" stroke="#10b981" strokeWidth={2} />
                   <Line type="monotone" dataKey="customers" stroke="#f59e0b" strokeWidth={2} />
+                  {compareEnabled && (
+                    <Line
+                      dataKey="priorSales"
+                      stroke="#94a3b8"
+                      fill="none"
+                      strokeDasharray="4 4"
+                      strokeWidth={1.5}
+                      name="Prior Period"
+                    />
+                  )}
                 </LineChart>
               </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          {/* Period Summary Table */}
+          <Card className="shadow-lg">
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="text-sm sm:text-base">Period Summary</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Period</TableHead>
+                    <TableHead className="text-right">Revenue</TableHead>
+                    <TableHead className="text-right">Orders</TableHead>
+                    <TableHead className="text-right">Customers</TableHead>
+                    <TableHead className="text-right">Avg Order</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {activeSalesData.map((row) => (
+                    <TableRow key={row.date}>
+                      <TableCell className="font-medium">{row.date}</TableCell>
+                      <TableCell className="text-right">${row.sales.toLocaleString()}</TableCell>
+                      <TableCell className="text-right">{row.orders}</TableCell>
+                      <TableCell className="text-right">{row.customers}</TableCell>
+                      <TableCell className="text-right">${(row.sales / row.orders).toFixed(0)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </CardContent>
           </Card>
         </TabsContent>
@@ -364,12 +487,10 @@ export const AnalyticsPage: React.FC = () => {
                           </span>
                         </div>
                       </div>
-                      <div className="w-full bg-slate-200 rounded-full h-2">
-                        <div
-                          className={`h-2 rounded-full ${category.growth > 0 ? 'bg-green-500' : 'bg-red-500'}`}
-                          style={{ width: `${Math.abs(category.growth) * 5}%` }}
-                        />
-                      </div>
+                      <Progress
+                        value={Math.abs(category.growth) * 5}
+                        className={`h-2 ${category.growth < 0 ? '[&>div]:bg-red-500' : '[&>div]:bg-green-500'}`}
+                      />
                     </div>
                   ))}
                 </div>
