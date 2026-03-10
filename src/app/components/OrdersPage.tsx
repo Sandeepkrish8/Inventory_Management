@@ -171,8 +171,8 @@ export const OrdersPage: React.FC = () => {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
-                <ShoppingCart className="w-6 h-6 text-blue-600" />
+              <div className="w-12 h-12 bg-teal-50 rounded-lg flex items-center justify-center">
+                <ShoppingCart className="w-6 h-6 text-teal-600" />
               </div>
               <div>
                 <p className="text-sm text-slate-500">Total Orders</p>
@@ -213,8 +213,8 @@ export const OrdersPage: React.FC = () => {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center">
-                <span className="text-xl font-semibold text-purple-600">$</span>
+              <div className="w-12 h-12 bg-teal-50 rounded-lg flex items-center justify-center">
+                <span className="text-xl font-semibold text-teal-600">$</span>
               </div>
               <div>
                 <p className="text-sm text-slate-500">Revenue</p>
@@ -403,7 +403,7 @@ export const OrdersPage: React.FC = () => {
                     time: selectedOrder.createdAt,
                     done: true,
                     icon: ShoppingCart,
-                    color: 'bg-blue-100 text-blue-600',
+                    color: 'bg-teal-100 text-teal-600',
                   },
                   {
                     label: 'Processing',
@@ -524,7 +524,7 @@ export const OrdersPage: React.FC = () => {
               {/* Total */}
               <div className="flex items-center justify-between text-lg">
                 <span className="font-semibold">Total Amount</span>
-                <span className="font-semibold text-blue-600">
+                <span className="font-semibold text-teal-600">
                   ${selectedOrder.total.toFixed(2)}
                 </span>
               </div>
@@ -632,9 +632,9 @@ export const OrdersPage: React.FC = () => {
                     </Button>
                   </div>
                 ))}
-                <div className="bg-blue-50 p-3 rounded-lg flex justify-between font-semibold">
+                <div className="bg-teal-50 p-3 rounded-lg flex justify-between font-semibold">
                   <span>Order Total</span>
-                  <span className="text-blue-600">
+                  <span className="text-teal-600">
                     $
                     {newOrderForm.items
                       .reduce((sum, i) => sum + i.quantity * i.unitPrice, 0)

@@ -2,9 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from '@/app/contexts/AuthContext';
 import { TenantProvider, useTenant } from '@/app/contexts/TenantContext';
 import { AIProvider } from '@/app/contexts/AIContext';
+import { ModuleProvider } from '@/app/contexts/ModuleContext';
+import { SupportTicketProvider } from '@/app/contexts/SupportTicketContext';
 import { BiometricGateway } from '@/app/components/BiometricGateway';
 import { TenantSelector } from '@/app/components/TenantSelector';
 import { LoginPage } from '@/app/components/LoginPage';
+import { WelcomeHub } from '@/app/components/WelcomeHub';
 import { DashboardLayout } from '@/app/components/DashboardLayout';
 import { Dashboard } from '@/app/components/Dashboard';
 import { ProductsPage } from '@/app/components/ProductsPage';
@@ -14,6 +17,8 @@ import { TransactionsPage } from '@/app/components/TransactionsPage';
 import { OrdersPage } from '@/app/components/OrdersPage';
 import { AnalyticsPage } from '@/app/components/AnalyticsPage';
 import { ProfileSettings } from '@/app/components/ProfileSettings';
+import { OrganizationSettings } from '@/app/components/OrganizationSettings';
+import { SubscriptionPage } from '@/app/components/SubscriptionPage';
 import { PurchaseOrdersPage } from '@/app/components/PurchaseOrdersPage';
 import { CustomersPage } from '@/app/components/CustomersPage';
 import { StockAdjustmentsPage } from '@/app/components/StockAdjustmentsPage';
@@ -27,11 +32,30 @@ import { AIDashboard } from '@/app/components/AIDashboard';
 import { AIChatAssistant } from '@/app/components/AIChatAssistant';
 import { Toaster } from '@/app/components/ui/sonner';
 import { mockTenants, mockUserTenantRoles } from '@/app/data/mockData';
+import { SupportTicketsPage } from '@/app/components/SupportTicketsPage';
+import { ErrorBoundary } from '@/app/components/ErrorBoundary';
+import { SalesOrdersPage } from '@/app/components/SalesOrdersPage';
+import { PackagesPage } from '@/app/components/PackagesPage';
+import { ShipmentsPage } from '@/app/components/ShipmentsPage';
+import { BillsPage } from '@/app/components/BillsPage';
+import { PaymentsReceivedPage } from '@/app/components/PaymentsReceivedPage';
+import { PaymentsMadePage } from '@/app/components/PaymentsMadePage';
+import { CreditNotesPage } from '@/app/components/CreditNotesPage';
+import { VendorCreditsPage } from '@/app/components/VendorCreditsPage';
+import { DeliveryChallansPage } from '@/app/components/DeliveryChallansPage';
+import { ItemGroupsPage } from '@/app/components/ItemGroupsPage';
+import { CompositeItemsPage } from '@/app/components/CompositeItemsPage';
+import { PriceListsPage } from '@/app/components/PriceListsPage';
+import { ReportsPage } from '@/app/components/ReportsPage';
+import { ActivityLogPage } from '@/app/components/ActivityLogPage';
+import { TaxRatesPage } from '@/app/components/TaxRatesPage';
+import { CurrencySettingsPage } from '@/app/components/CurrencySettingsPage';
+import { IntegrationsPage } from '@/app/components/IntegrationsPage';
 
 function AppContent() {
   const { isAuthenticated, user } = useAuth();
   const { currentTenant, currentEnvironment, setAvailableTenants } = useTenant();
-  const [currentPage, setCurrentPage] = useState('dashboard');
+  const [currentPage, setCurrentPage] = useState('home');
   const [authFlowStep, setAuthFlowStep] = useState('biometric');
 
   // Initialize tenants when user logs in
@@ -75,6 +99,8 @@ function AppContent() {
 
   const renderPage = () => {
     switch (currentPage) {
+      case 'home':
+        return <WelcomeHub onNavigate={(page) => setCurrentPage(page)} />;
       case 'dashboard':
         return <Dashboard onNavigate={(page) => setCurrentPage(page)} />;
       case 'ai-dashboard':
@@ -109,18 +135,60 @@ function AppContent() {
         return <WarehousesPage />;
       case 'stock-transfers':
         return <StockTransfersPage />;
+      case 'org-settings':
+        return <OrganizationSettings />;
+      case 'billing':
+        return <SubscriptionPage />;
       case 'settings':
         return <ProfileSettings />;
+      case 'support-tickets':
+        return <SupportTicketsPage />;
+      case 'sales-orders':
+        return <SalesOrdersPage />;
+      case 'packages':
+        return <PackagesPage />;
+      case 'shipments':
+        return <ShipmentsPage />;
+      case 'bills':
+        return <BillsPage />;
+      case 'payments-received':
+        return <PaymentsReceivedPage />;
+      case 'payments-made':
+        return <PaymentsMadePage />;
+      case 'credit-notes':
+        return <CreditNotesPage />;
+      case 'vendor-credits':
+        return <VendorCreditsPage />;
+      case 'delivery-challans':
+        return <DeliveryChallansPage />;
+      case 'item-groups':
+        return <ItemGroupsPage />;
+      case 'composite-items':
+        return <CompositeItemsPage />;
+      case 'price-lists':
+        return <PriceListsPage />;
+      case 'reports':
+        return <ReportsPage />;
+      case 'activity-log':
+        return <ActivityLogPage />;
+      case 'tax-rates':
+        return <TaxRatesPage />;
+      case 'currency-settings':
+        return <CurrencySettingsPage />;
+      case 'integrations':
+        return <IntegrationsPage />;
       default:
-        return <Dashboard onNavigate={(page) => setCurrentPage(page)} />;
+        return <WelcomeHub onNavigate={(page) => setCurrentPage(page)} />;
     }
   };
 
   return (
     <>
-      <DashboardLayout currentPage={currentPage} onNavigate={(page) => setCurrentPage(page)}>
-        {renderPage()}
-      </DashboardLayout>
+      <ErrorBoundary onGoHome={() => setCurrentPage('home')}>
+        <DashboardLayout currentPage={currentPage} onNavigate={(page) => setCurrentPage(page)}>
+          {renderPage()}
+        </DashboardLayout>
+      </ErrorBoundary>
       <AIChatAssistant onNavigate={(page) => setCurrentPage(page)} />
     </>
   );
@@ -131,8 +199,12 @@ export default function App() {
     <AuthProvider>
       <TenantProvider>
         <AIProvider>
-          <AppContent />
-          <Toaster />
+          <ModuleProvider>
+            <SupportTicketProvider>
+              <AppContent />
+              <Toaster />
+            </SupportTicketProvider>
+          </ModuleProvider>
         </AIProvider>
       </TenantProvider>
     </AuthProvider>

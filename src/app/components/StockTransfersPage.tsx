@@ -220,8 +220,8 @@ export const StockTransfersPage: React.FC = () => {
   const getStatusBadge = (status: StockTransfer['status']) => {
     const variants = {
       Pending: { variant: 'secondary' as const, className: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400', icon: Clock },
-      Approved: { variant: 'default' as const, className: 'bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400', icon: CheckCircle },
-      'In Transit': { variant: 'default' as const, className: 'bg-purple-100 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400', icon: Truck },
+      Approved: { variant: 'default' as const, className: 'bg-teal-100 text-teal-700 dark:bg-teal-900/20 dark:text-teal-400', icon: CheckCircle },
+      'In Transit': { variant: 'default' as const, className: 'bg-teal-100 text-teal-700 dark:bg-teal-900/20 dark:text-teal-400', icon: Truck },
       Received: { variant: 'default' as const, className: 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400', icon: CheckCircle },
       Cancelled: { variant: 'destructive' as const, icon: XCircle },
     };
@@ -252,7 +252,7 @@ export const StockTransfersPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-            <ArrowRightLeft className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600" />
+            <ArrowRightLeft className="w-6 h-6 sm:w-8 sm:h-8 text-teal-600" />
             Stock Transfers
           </h2>
           <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 mt-1">
@@ -279,8 +279,8 @@ export const StockTransfersPage: React.FC = () => {
         <Card>
           <CardContent className="p-4 sm:p-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
-                <ArrowRightLeft className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-teal-50 dark:bg-teal-900/20 rounded-lg flex items-center justify-center">
+                <ArrowRightLeft className="w-5 h-5 sm:w-6 sm:h-6 text-teal-600" />
               </div>
               <div>
                 <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Total Transfers</p>
@@ -311,8 +311,8 @@ export const StockTransfersPage: React.FC = () => {
         <Card>
           <CardContent className="p-4 sm:p-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-50 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
-                <Truck className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-teal-50 dark:bg-teal-900/20 rounded-lg flex items-center justify-center">
+                <Truck className="w-5 h-5 sm:w-6 sm:h-6 text-teal-600" />
               </div>
               <div>
                 <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">In Transit</p>
@@ -466,7 +466,7 @@ export const StockTransfersPage: React.FC = () => {
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <ArrowRightLeft className="w-5 h-5 text-blue-600" />
+              <ArrowRightLeft className="w-5 h-5 text-teal-600" />
               Transfer Details
             </DialogTitle>
           </DialogHeader>

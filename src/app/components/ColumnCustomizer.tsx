@@ -94,7 +94,7 @@ export const ColumnCustomizer: React.FC<ColumnCustomizerProps> = ({
                     id={column.id}
                     checked={column.visible}
                     onCheckedChange={() => handleToggleVisibility(column.id)}
-                    className="data-[state=checked]:bg-blue-600"
+                    className="data-[state=checked]:bg-teal-600"
                   />
                   
                   <Label
@@ -135,7 +135,7 @@ export const ColumnCustomizer: React.FC<ColumnCustomizerProps> = ({
               <Button
                 size="sm"
                 onClick={handleApply}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
+                className="bg-teal-600 hover:bg-teal-700 text-white"
               >
                 Apply Changes
               </Button>

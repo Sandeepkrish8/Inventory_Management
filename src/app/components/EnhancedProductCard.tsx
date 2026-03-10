@@ -40,7 +40,7 @@ export const EnhancedProductCard: React.FC<EnhancedProductCardProps> = ({
       {/* Color accent bar based on stock level */}
       <div className={cn(
         "h-2 w-full",
-        isLowStock ? "bg-gradient-to-r from-orange-500 to-red-500" : "bg-gradient-to-r from-blue-500 to-green-500"
+        isLowStock ? "bg-gradient-to-r from-orange-500 to-red-500" : "bg-gradient-to-r from-teal-500 to-emerald-500"
       )} />
       
       <CardContent className="p-4 sm:p-6">
@@ -54,11 +54,11 @@ export const EnhancedProductCard: React.FC<EnhancedProductCardProps> = ({
           </div>
           <div className={cn(
             "w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0",
-            isLowStock ? "bg-orange-100" : "bg-blue-100"
+            isLowStock ? "bg-orange-100" : "bg-teal-100"
           )}>
             <Package className={cn(
               "w-6 h-6",
-              isLowStock ? "text-orange-600" : "text-blue-600"
+              isLowStock ? "text-orange-600" : "text-teal-600"
             )} />
           </div>
         </div>

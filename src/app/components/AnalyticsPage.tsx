@@ -160,7 +160,7 @@ export const AnalyticsPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 flex items-center gap-2">
-            <BarChart3 className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600" />
+            <BarChart3 className="w-6 h-6 sm:w-8 sm:h-8 text-teal-600" />
             Analytics
           </h2>
           <p className="text-sm sm:text-base text-slate-500 mt-1">
@@ -242,7 +242,7 @@ export const AnalyticsPage: React.FC = () => {
           <Card className="shadow-lg">
             <CardHeader className="p-4 sm:p-6">
               <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+                <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-teal-600" />
                 Sales Trend
               </CardTitle>
             </CardHeader>
@@ -295,7 +295,7 @@ export const AnalyticsPage: React.FC = () => {
             <Card className="shadow-lg">
               <CardHeader className="p-4 sm:p-6">
                 <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                  <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+                  <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-teal-600" />
                   Category Revenue
                 </CardTitle>
               </CardHeader>
@@ -436,7 +436,7 @@ export const AnalyticsPage: React.FC = () => {
             <Card className="shadow-lg">
               <CardHeader className="p-4 sm:p-6">
                 <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                  <Package className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+                  <Package className="w-4 h-4 sm:w-5 sm:h-5 text-teal-600" />
                   Top Products by Revenue
                 </CardTitle>
               </CardHeader>
@@ -504,7 +504,7 @@ export const AnalyticsPage: React.FC = () => {
           <Card className="shadow-lg">
             <CardHeader className="p-4 sm:p-6">
               <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+                <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-teal-600" />
                 Performance Radar
               </CardTitle>
             </CardHeader>

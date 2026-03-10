@@ -46,6 +46,7 @@ export const BiometricGateway: React.FC<BiometricGatewayProps> = ({ onSuccess })
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<UserRole>('Admin');
+  const [domain, setDomain] = useState<string>(localStorage.getItem('auth_domain') || 'retail');
   const [rememberMe, setRememberMe] = useState(false);
   
   // Biometric state
@@ -89,7 +90,7 @@ export const BiometricGateway: React.FC<BiometricGatewayProps> = ({ onSuccess })
 
     setLoading(true);
     try {
-      await login(email, password, role);
+      await login(email, password, role, domain);
       if (rememberMe) {
         localStorage.setItem('remembered_email', email);
       }
@@ -155,6 +156,8 @@ export const BiometricGateway: React.FC<BiometricGatewayProps> = ({ onSuccess })
     }
   };
 
+  // Add a small sector select in the UI (re-using existing Select component)
+
   const handleSendOTP = async () => {
     if (!otpEmail) {
       toast.error('Please enter your email');
@@ -187,7 +190,7 @@ export const BiometricGateway: React.FC<BiometricGatewayProps> = ({ onSuccess })
       
       // Mock successful verification
       if (otpCode === '123456') {
-        await login(otpEmail, 'mock-password', 'Admin');
+        await login(otpEmail, 'mock-password', 'Admin', domain);
         toast.success('Verification successful');
         onSuccess();
       } else {
@@ -400,7 +403,7 @@ export const BiometricGateway: React.FC<BiometricGatewayProps> = ({ onSuccess })
                           </SelectItem>
                           <SelectItem value="Staff">
                             <div className="flex items-center gap-2">
-                              <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                              <span className="w-2 h-2 bg-teal-500 rounded-full"></span>
                               <span>Staff - Standard Access</span>
                             </div>
                           </SelectItem>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/app/components/ui/card';
-import { mockDashboardMetrics, mockProducts, mockOrders, mockTransactions, mockCategories } from '@/app/data/mockData';
+import { mockProducts, mockOrders, mockTransactions, mockCategories } from '@/app/data/mockData';
+import { getModuleMetrics } from '@/app/services/moduleMetrics';
 import {
   Package,
   AlertTriangle,
@@ -38,9 +39,13 @@ import {
 } from 'recharts';
 import { format } from 'date-fns';
 import { Breadcrumbs } from '@/app/components/Breadcrumbs';
+import { ModuleSelector } from '@/app/components/ModuleSelector';
 import { Product } from '@/app/types';
 import { RealTimeStockUpdates } from '@/app/components/RealTimeStockUpdates';
 import { AIAlertsPanel } from '@/app/components/AIAlertsPanel';
+import { useModule } from '@/app/contexts/ModuleContext';
+import PharmacyDashboardCards from '@/app/components/modules/PharmacyDashboardCards';
+import ManufacturingDashboardCards from '@/app/components/modules/ManufacturingDashboardCards';
 
 interface DashboardProps {
   onNavigate?: (page: string) => void;
@@ -48,8 +53,9 @@ interface DashboardProps {
 
 export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
   const [dashboardRange, setDashboardRange] = useState<'7d' | '30d' | '90d' | '1y'>('1y');
+  const { module } = useModule();
 
-  const metrics = mockDashboardMetrics;
+  const metrics = React.useMemo(() => getModuleMetrics(module, mockProducts), [module]);
   const lowStockProducts = mockProducts.filter(p => p.quantity <= p.minStockLevel);
   const recentOrders = mockOrders.slice(0, 5);
   const recentTransactions = mockTransactions.slice(0, 6);
@@ -143,9 +149,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
       title: 'Total Products',
       value: metrics.totalProducts,
       icon: Package,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-500',
-      gradient: 'from-blue-500 to-blue-600',
+      color: 'text-teal-600',
+      bgColor: 'bg-teal-500',
+      gradient: 'from-teal-500 to-teal-600',
       change: 2,
       description: '+2 added this month',
     },
@@ -173,9 +179,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
       title: 'Total Revenue',
       value: `$${metrics.totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2 })}`,
       icon: DollarSign,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-500',
-      gradient: 'from-purple-500 to-purple-600',
+      color: 'text-teal-600',
+      bgColor: 'bg-teal-500',
+      gradient: 'from-teal-500 to-teal-600',
       change: metrics.revenueChange,
       description: 'This month',
     },
@@ -183,9 +189,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
       title: 'Inventory Value',
       value: `$${totalInventoryValue.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
       icon: Boxes,
-      color: 'text-indigo-600',
-      bgColor: 'bg-indigo-500',
-      gradient: 'from-indigo-500 to-indigo-600',
+      color: 'text-teal-600',
+      bgColor: 'bg-teal-500',
+      gradient: 'from-teal-500 to-teal-600',
       change: 5,
       description: 'Total stock value',
     },
@@ -204,15 +210,18 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-            <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600 dark:text-blue-400" />
+            <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-teal-600 dark:text-teal-400" />
             Dashboard
           </h2>
           <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 mt-1">Welcome back! Here's what's happening today.</p>
         </div>
-        <Button className="gap-2 w-full sm:w-auto" onClick={() => onNavigate?.('analytics')}>
-          <Activity className="w-4 h-4" />
-          View Reports
-        </Button>
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <ModuleSelector />
+          <Button className="gap-2 w-full sm:w-auto" onClick={() => onNavigate?.('analytics')}>
+            <Activity className="w-4 h-4" />
+            View Reports
+          </Button>
+        </div>
       </div>
 
       {/* Stats Grid */}
@@ -253,11 +262,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
       </div>
 
       {/* AI Features Banner */}
-      <Card className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border-purple-200 dark:border-purple-800 shadow-lg hover:shadow-xl transition-shadow">
+      <Card className="bg-gradient-to-r from-teal-50 to-teal-50 dark:from-teal-900/20 dark:to-teal-900/20 border-teal-200 dark:border-teal-800 shadow-lg hover:shadow-xl transition-shadow">
         <CardContent className="p-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center flex-shrink-0 shadow-lg">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-600 to-emerald-600 flex items-center justify-center flex-shrink-0 shadow-lg">
                 <Brain className="w-6 h-6 text-white" />
               </div>
               <div className="flex-1">
@@ -291,7 +300,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             </div>
             <Button 
               size="lg" 
-              className="gap-2 w-full sm:w-auto bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+              className="gap-2 w-full sm:w-auto bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700"
               onClick={() => onNavigate?.('ai-dashboard')}
             >
               <Brain className="w-5 h-5" />
@@ -315,7 +324,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                  <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 flex-shrink-0" />
+                  <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-teal-600 flex-shrink-0" />
                   Revenue Trend
                 </CardTitle>
                 <p className="text-xs sm:text-sm text-slate-500">Monthly revenue and order statistics</p>
@@ -327,7 +336,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                     onClick={() => setDashboardRange(range)}
                     className={`px-2 py-1 text-xs rounded font-medium transition-colors ${
                       dashboardRange === range
-                        ? 'bg-blue-600 text-white'
+                        ? 'bg-teal-600 text-white'
                         : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                     }`}
                   >
@@ -408,11 +417,21 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
         </Card>
       </div>
 
+      {/* Module-specific Dashboard Cards */}
+      <div className="mt-4">
+        {(() => {
+          const { module } = useModule();
+          if (module === 'pharmacy') return <PharmacyDashboardCards />;
+          if (module === 'manufacturing') return <ManufacturingDashboardCards />;
+          return null;
+        })()}
+      </div>
+
       {/* Category Performance */}
       <Card className="shadow-lg hover:shadow-xl transition-shadow">
         <CardHeader className="p-4 sm:p-6">
           <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-            <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 flex-shrink-0" />
+            <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-teal-600 flex-shrink-0" />
             Category Performance
           </CardTitle>
           <p className="text-xs sm:text-sm text-slate-500">Product distribution by category</p>
@@ -462,7 +481,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
               {topSellingProducts.map((item, index) => (
                 <div
                   key={item.product.id}
-                  className="flex items-center gap-3 sm:gap-4 p-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200 hover:shadow-md transition-all hover:scale-105"
+                  className="flex items-center gap-3 sm:gap-4 p-3 bg-gradient-to-r from-teal-50 to-teal-50 rounded-lg border border-teal-200 hover:shadow-md transition-all hover:scale-105"
                 >
                   <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full text-white font-bold text-sm sm:text-base flex-shrink-0">
                     #{index + 1}
@@ -551,7 +570,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
           <Card className="shadow-lg h-full hover:shadow-xl transition-shadow">
             <CardHeader className="p-4 sm:p-6">
               <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 flex-shrink-0" />
+                <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-teal-600 flex-shrink-0" />
                 Recent Activity
               </CardTitle>
             </CardHeader>

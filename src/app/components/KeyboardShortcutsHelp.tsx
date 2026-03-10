@@ -87,7 +87,7 @@ export const KeyboardShortcutsHelp: React.FC = () => {
       <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
-            <Keyboard className="w-5 h-5 text-blue-600" />
+            <Keyboard className="w-5 h-5 text-teal-600" />
             Keyboard Shortcuts
           </DialogTitle>
           <DialogDescription>

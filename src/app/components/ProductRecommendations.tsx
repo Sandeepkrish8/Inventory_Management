@@ -58,7 +58,7 @@ export const ProductRecommendations: React.FC<ProductRecommendationsProps> = ({
       <Card>
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+            <Sparkles className="w-5 h-5 text-teal-600 dark:text-teal-400" />
             AI Recommendations
           </CardTitle>
         </CardHeader>
@@ -79,7 +79,7 @@ export const ProductRecommendations: React.FC<ProductRecommendationsProps> = ({
     <Card>
       <CardHeader>
         <CardTitle className="text-base flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+          <Sparkles className="w-5 h-5 text-teal-600 dark:text-teal-400" />
           Recommended Products
           <Badge variant="secondary" className="ml-2 text-xs">
             AI-Powered

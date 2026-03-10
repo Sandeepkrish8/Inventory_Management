@@ -54,7 +54,7 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  const login = async (email, password, role) => {
+  const login = async (email, password, role, domain) => {
     // Mock login - In production, replace with API call
     await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API delay
 
@@ -63,6 +63,7 @@ export const AuthProvider = ({ children }) => {
       email,
       name: role === 'Admin' ? 'Admin User' : role === 'Staff' ? 'Staff User' : 'Viewer User',
       role,
+      domain: domain || null,
       avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${role}`,
       biometricEnabled: isBiometricEnrolled,
       lastLoginAt: new Date().toISOString(),
@@ -75,6 +76,9 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('auth_token', mockToken);
     localStorage.setItem('auth_user', JSON.stringify(mockUser));
     localStorage.setItem('refresh_token', `refresh_${mockToken}`);
+    if (domain) {
+      localStorage.setItem('auth_domain', domain);
+    }
   };
 
   const loginWithBiometric = async () => {
@@ -101,6 +105,12 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('auth_token', mockToken);
         localStorage.setItem('auth_user', JSON.stringify(parsedUser));
 
+        // restore domain if present
+        const savedDomain = localStorage.getItem('auth_domain');
+        if (savedDomain) {
+          // no-op for mock, in production propagate to session
+        }
+
         return true;
       } else {
         // Demo: create a default user if no cached user exists
@@ -110,6 +120,7 @@ export const AuthProvider = ({ children }) => {
           name: 'Biometric User',
           role: 'Admin',
           avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=Biometric',
+          domain: localStorage.getItem('auth_domain') || null,
           biometricEnabled: true,
           lastLoginAt: new Date().toISOString(),
         };

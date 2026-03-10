@@ -70,7 +70,7 @@ export const ProfileSettings: React.FC = () => {
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <span className="flex items-center gap-2">
-              <User className="w-5 h-5 text-blue-600" />
+              <User className="w-5 h-5 text-teal-600" />
               Personal Information
             </span>
             {!isEditing && (
@@ -84,7 +84,7 @@ export const ProfileSettings: React.FC = () => {
           {/* Avatar Section */}
           <div className="flex items-center gap-6">
             <div className="relative">
-              <div className="w-24 h-24 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+              <div className="w-24 h-24 bg-gradient-to-br from-teal-500 to-pink-500 rounded-full flex items-center justify-center">
                 <User className="w-12 h-12 text-white" />
               </div>
               {isEditing && (

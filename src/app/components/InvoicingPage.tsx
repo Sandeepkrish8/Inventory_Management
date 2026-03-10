@@ -174,7 +174,7 @@ export const InvoicingPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-            <FileText className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600" />
+            <FileText className="w-6 h-6 sm:w-8 sm:h-8 text-teal-600" />
             Invoices
           </h2>
           <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 mt-1">
@@ -194,8 +194,8 @@ export const InvoicingPage: React.FC = () => {
         <Card>
           <CardContent className="p-4 sm:p-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
-                <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-teal-50 dark:bg-teal-900/20 rounded-lg flex items-center justify-center">
+                <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-teal-600" />
               </div>
               <div>
                 <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Total Invoices</p>
@@ -377,7 +377,7 @@ export const InvoicingPage: React.FC = () => {
           <DialogHeader>
             <DialogTitle className="flex items-center justify-between">
               <span className="flex items-center gap-2">
-                <FileText className="w-5 h-5 text-blue-600" />
+                <FileText className="w-5 h-5 text-teal-600" />
                 Invoice Details
               </span>
               {selectedInvoice && getStatusBadge(selectedInvoice.status)}
@@ -462,7 +462,7 @@ export const InvoicingPage: React.FC = () => {
                   <Separator />
                   <div className="flex justify-between text-lg font-bold">
                     <span>Total:</span>
-                    <span className="text-blue-600">${selectedInvoice.total.toFixed(2)}</span>
+                    <span className="text-teal-600">${selectedInvoice.total.toFixed(2)}</span>
                   </div>
                 </div>
               </div>
@@ -646,7 +646,7 @@ export const InvoicingPage: React.FC = () => {
                     </Button>
                   </div>
                 ))}
-                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg space-y-1 text-sm">
+                <div className="bg-teal-50 dark:bg-teal-900/20 p-4 rounded-lg space-y-1 text-sm">
                   {(() => {
                     const subtotal = invoiceForm.items.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0);
                     const tax = subtotal * (invoiceForm.taxRate / 100);
@@ -655,7 +655,7 @@ export const InvoicingPage: React.FC = () => {
                         <div className="flex justify-between"><span className="text-slate-500">Subtotal</span><span>${subtotal.toFixed(2)}</span></div>
                         <div className="flex justify-between"><span className="text-slate-500">Tax ({invoiceForm.taxRate}%)</span><span>${tax.toFixed(2)}</span></div>
                         <Separator className="my-1" />
-                        <div className="flex justify-between font-bold text-base"><span>Total</span><span className="text-blue-600">${(subtotal + tax).toFixed(2)}</span></div>
+                        <div className="flex justify-between font-bold text-base"><span>Total</span><span className="text-teal-600">${(subtotal + tax).toFixed(2)}</span></div>
                       </>
                     );
                   })()}

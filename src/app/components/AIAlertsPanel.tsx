@@ -29,7 +29,7 @@ export const AIAlertsPanel: React.FC = () => {
       case 'medium':
         return <AlertCircle className="w-5 h-5 text-amber-600" />;
       case 'low':
-        return <Info className="w-5 h-5 text-blue-600" />;
+        return <Info className="w-5 h-5 text-teal-600" />;
       default:
         return <Bell className="w-5 h-5 text-slate-600" />;
     }
@@ -44,7 +44,7 @@ export const AIAlertsPanel: React.FC = () => {
       case 'medium':
         return 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800';
       case 'low':
-        return 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800';
+        return 'bg-teal-50 dark:bg-teal-900/20 border-teal-200 dark:border-teal-800';
       default:
         return 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700';
     }

@@ -22,6 +22,7 @@ export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<UserRole>('Admin');
+  const [domain, setDomain] = useState<string>('retail');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -36,7 +37,7 @@ export const LoginPage: React.FC = () => {
 
     setLoading(true);
     try {
-      await login(email, password, role);
+      await login(email, password, role, domain);
     } catch (err) {
       setError('Login failed. Please try again.');
     } finally {
@@ -127,7 +128,7 @@ export const LoginPage: React.FC = () => {
                         Admin - Full system access
                       </p>
                       <p className="text-xs text-white/80 flex items-center gap-2">
-                        <span className="w-2 h-2 bg-blue-400 rounded-full"></span>
+                        <span className="w-2 h-2 bg-teal-400 rounded-full"></span>
                         Staff - Edit & manage inventory
                       </p>
                       <p className="text-xs text-white/80 flex items-center gap-2">
@@ -204,7 +205,7 @@ export const LoginPage: React.FC = () => {
                             </SelectItem>
                             <SelectItem value="Staff">
                               <div className="flex items-center gap-2">
-                                <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                                <span className="w-2 h-2 bg-teal-500 rounded-full"></span>
                                 <span>Staff - Standard Access</span>
                               </div>
                             </SelectItem>
@@ -214,6 +215,24 @@ export const LoginPage: React.FC = () => {
                                 <span>Viewer - Read Only</span>
                               </div>
                             </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="domain" className="text-sm text-slate-700">Sector</Label>
+                      <div className="relative">
+                        <Select value={domain} onValueChange={(v: string) => setDomain(v)} disabled={loading}>
+                          <SelectTrigger className="h-11 pl-10 border-slate-300 focus:ring-teal-500">
+                            <SelectValue placeholder="Select sector" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="warehouse">Warehouse</SelectItem>
+                            <SelectItem value="retail">Supermarket / Retail</SelectItem>
+                            <SelectItem value="medical">Medical / Pharmacy</SelectItem>
+                            <SelectItem value="garments">Garments</SelectItem>
+                            <SelectItem value="automobile">Automobile</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>

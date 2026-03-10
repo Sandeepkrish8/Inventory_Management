@@ -138,7 +138,7 @@ export const CustomersPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-            <Users className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600" />
+            <Users className="w-6 h-6 sm:w-8 sm:h-8 text-teal-600" />
             Customers
           </h2>
           <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 mt-1">
@@ -164,8 +164,8 @@ export const CustomersPage: React.FC = () => {
         <Card>
           <CardContent className="p-4 sm:p-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
-                <Users className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-teal-50 dark:bg-teal-900/20 rounded-lg flex items-center justify-center">
+                <Users className="w-5 h-5 sm:w-6 sm:h-6 text-teal-600" />
               </div>
               <div>
                 <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Total Customers</p>
@@ -196,8 +196,8 @@ export const CustomersPage: React.FC = () => {
         <Card>
           <CardContent className="p-4 sm:p-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-50 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
-                <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-teal-50 dark:bg-teal-900/20 rounded-lg flex items-center justify-center">
+                <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6 text-teal-600" />
               </div>
               <div>
                 <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Total Orders</p>
@@ -349,7 +349,7 @@ export const CustomersPage: React.FC = () => {
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Users className="w-5 h-5 text-blue-600" />
+              <Users className="w-5 h-5 text-teal-600" />
               Customer Details
             </DialogTitle>
           </DialogHeader>
@@ -407,7 +407,7 @@ export const CustomersPage: React.FC = () => {
 
               <div className="grid grid-cols-3 gap-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-blue-600">{selectedCustomer.totalOrders}</p>
+                  <p className="text-2xl font-bold text-teal-600">{selectedCustomer.totalOrders}</p>
                   <p className="text-xs text-slate-500">Total Orders</p>
                 </div>
                 <div className="text-center">

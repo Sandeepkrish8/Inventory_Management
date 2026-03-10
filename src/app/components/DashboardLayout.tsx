@@ -31,7 +31,23 @@ import {
   Warehouse,
   TruckIcon,
   Brain,
-  Sparkles
+  Sparkles,
+  HelpCircle,
+  Home,
+  ClipboardList,
+  PackageCheck,
+  Send,
+  Receipt,
+  Banknote,
+  CreditCard,
+  BadgeDollarSign,
+  ScrollText,
+  Layers,
+  Tags,
+  Percent,
+  Plug,
+  Activity,
+  ChevronRight,
 } from 'lucide-react';
 import { cn } from '@/app/components/ui/utils';
 import { Badge } from '@/app/components/ui/badge';
@@ -51,6 +67,7 @@ import { GlobalSearch } from '@/app/components/GlobalSearch';
 import { CommandPalette, CommandPaletteHint } from '@/app/components/CommandPalette';
 import { KeyboardShortcutsHelp } from '@/app/components/KeyboardShortcutsHelp';
 import { Separator } from '@/app/components/ui/separator';
+import { RaiseTicketModal } from '@/app/components/RaiseTicketModal';
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -67,32 +84,87 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const { currentTenant, currentEnvironment, availableTenants, switchTenant, switchEnvironment } = useTenant();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
 
-  const allMenuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, allowedRoles: ['Admin', 'Staff', 'Viewer'] },
-    { id: 'ai-dashboard', label: 'AI Dashboard', icon: Brain, allowedRoles: ['Admin', 'Staff', 'Viewer'], badge: 'AI' },
-    { id: 'analytics', label: 'Analytics', icon: BarChart3, allowedRoles: ['Admin', 'Staff', 'Viewer'] },
-    { id: 'products', label: 'Products', icon: Package, allowedRoles: ['Admin', 'Staff', 'Viewer'] },
-    { id: 'categories', label: 'Categories', icon: FolderTree, allowedRoles: ['Admin', 'Staff'] },
-    { id: 'suppliers', label: 'Suppliers', icon: Truck, allowedRoles: ['Admin', 'Staff', 'Viewer'] },
-    { id: 'transactions', label: 'Transactions', icon: ArrowLeftRight, allowedRoles: ['Admin', 'Staff', 'Viewer'] },
-    { id: 'orders', label: 'Orders', icon: ShoppingCart, allowedRoles: ['Admin', 'Staff', 'Viewer'] },
-    { id: 'purchase-orders', label: 'Purchase Orders', icon: FileText, allowedRoles: ['Admin', 'Staff'] },
-    { id: 'customers', label: 'Customers', icon: Users, allowedRoles: ['Admin', 'Staff'] },
-    { id: 'stock-adjustments', label: 'Stock Adjustments', icon: AlertTriangle, allowedRoles: ['Admin', 'Staff'] },
-    { id: 'invoices', label: 'Invoices', icon: DollarSign, allowedRoles: ['Admin'] },
-    { id: 'low-stock-alerts', label: 'Low Stock Alerts', icon: AlertCircle, allowedRoles: ['Admin'] },
-    { id: 'users', label: 'Users Management', icon: UserCog, allowedRoles: ['Admin'] },
-    { id: 'warehouses', label: 'Warehouses', icon: Warehouse, allowedRoles: ['Admin'] },
-    { id: 'stock-transfers', label: 'Stock Transfers', icon: TruckIcon, allowedRoles: ['Admin', 'Staff'] },
-    { id: 'settings', label: 'Settings', icon: Settings, allowedRoles: ['Admin', 'Staff', 'Viewer'] },
+  const sidebarSections = [
+    {
+      label: 'Home',
+      items: [
+        { id: 'home', label: 'Home', icon: Home, allowedRoles: ['Admin', 'Staff', 'Viewer'] },
+        { id: 'dashboard', label: 'Overview', icon: LayoutDashboard, allowedRoles: ['Admin', 'Staff', 'Viewer'] },
+        { id: 'ai-dashboard', label: 'AI Dashboard', icon: Brain, allowedRoles: ['Admin', 'Staff', 'Viewer'], badge: 'AI' },
+        { id: 'analytics', label: 'Analytics', icon: BarChart3, allowedRoles: ['Admin', 'Staff', 'Viewer'] },
+      ],
+    },
+    {
+      label: 'Inventory',
+      items: [
+        { id: 'products', label: 'Products', icon: Package, allowedRoles: ['Admin', 'Staff', 'Viewer'] },
+        { id: 'categories', label: 'Categories', icon: FolderTree, allowedRoles: ['Admin', 'Staff'] },
+        { id: 'item-groups', label: 'Item Groups', icon: Layers, allowedRoles: ['Admin', 'Staff'] },
+        { id: 'composite-items', label: 'Composite Items', icon: PackageCheck, allowedRoles: ['Admin', 'Staff'] },
+        { id: 'price-lists', label: 'Price Lists', icon: Tags, allowedRoles: ['Admin', 'Staff'] },
+        { id: 'stock-adjustments', label: 'Stock Adjustments', icon: AlertTriangle, allowedRoles: ['Admin', 'Staff'] },
+        { id: 'warehouses', label: 'Warehouses', icon: Warehouse, allowedRoles: ['Admin'] },
+        { id: 'stock-transfers', label: 'Stock Transfers', icon: TruckIcon, allowedRoles: ['Admin', 'Staff'] },
+        { id: 'low-stock-alerts', label: 'Low Stock Alerts', icon: AlertCircle, allowedRoles: ['Admin'] },
+      ],
+    },
+    {
+      label: 'Sales',
+      items: [
+        { id: 'customers', label: 'Customers', icon: Users, allowedRoles: ['Admin', 'Staff'] },
+        { id: 'sales-orders', label: 'Sales Orders', icon: ClipboardList, allowedRoles: ['Admin', 'Staff', 'Viewer'] },
+        { id: 'packages', label: 'Packages', icon: PackageCheck, allowedRoles: ['Admin', 'Staff'] },
+        { id: 'shipments', label: 'Shipments', icon: Send, allowedRoles: ['Admin', 'Staff'] },
+        { id: 'delivery-challans', label: 'Delivery Challans', icon: ScrollText, allowedRoles: ['Admin', 'Staff'] },
+        { id: 'invoices', label: 'Invoices', icon: FileText, allowedRoles: ['Admin'] },
+        { id: 'payments-received', label: 'Payments Received', icon: Banknote, allowedRoles: ['Admin'] },
+        { id: 'credit-notes', label: 'Credit Notes', icon: CreditCard, allowedRoles: ['Admin'] },
+      ],
+    },
+    {
+      label: 'Purchases',
+      items: [
+        { id: 'suppliers', label: 'Suppliers', icon: Truck, allowedRoles: ['Admin', 'Staff', 'Viewer'] },
+        { id: 'purchase-orders', label: 'Purchase Orders', icon: FileText, allowedRoles: ['Admin', 'Staff'] },
+        { id: 'bills', label: 'Bills', icon: Receipt, allowedRoles: ['Admin'] },
+        { id: 'payments-made', label: 'Payments Made', icon: BadgeDollarSign, allowedRoles: ['Admin'] },
+        { id: 'vendor-credits', label: 'Vendor Credits', icon: CreditCard, allowedRoles: ['Admin'] },
+      ],
+    },
+    {
+      label: 'Reports',
+      items: [
+        { id: 'reports', label: 'Reports', icon: BarChart3, allowedRoles: ['Admin', 'Staff', 'Viewer'] },
+        { id: 'activity-log', label: 'Activity Log', icon: Activity, allowedRoles: ['Admin'] },
+      ],
+    },
+    {
+      label: 'Settings',
+      items: [
+        { id: 'transactions', label: 'Transactions', icon: ArrowLeftRight, allowedRoles: ['Admin', 'Staff', 'Viewer'] },
+        { id: 'orders', label: 'Orders', icon: ShoppingCart, allowedRoles: ['Admin', 'Staff', 'Viewer'] },
+        { id: 'org-settings', label: 'Organization', icon: Building2, allowedRoles: ['Admin'] },
+        { id: 'tax-rates', label: 'Tax Rates', icon: Percent, allowedRoles: ['Admin'] },
+        { id: 'currency-settings', label: 'Currencies', icon: Globe, allowedRoles: ['Admin'] },
+        { id: 'integrations', label: 'Integrations', icon: Plug, allowedRoles: ['Admin'] },
+        { id: 'billing', label: 'Subscription & Billing', icon: DollarSign, allowedRoles: ['Admin'] },
+        { id: 'users', label: 'Users Management', icon: UserCog, allowedRoles: ['Admin'] },
+        { id: 'settings', label: 'Personal Settings', icon: Settings, allowedRoles: ['Admin', 'Staff', 'Viewer'] },
+        { id: 'support-tickets', label: 'Support Tickets', icon: HelpCircle, allowedRoles: ['Admin'] },
+      ],
+    },
   ];
 
-  // Filter menu items based on user role
-  const menuItems = allMenuItems.filter(item => {
-    if (!user?.role) return false;
-    return (item as any).allowedRoles.includes(user.role);
-  });
+  // Filter sections based on user role
+  const filteredSections = sidebarSections.map(section => ({
+    ...section,
+    items: section.items.filter(item => user?.role && (item as any).allowedRoles.includes(user.role)),
+  })).filter(section => section.items.length > 0);
+
+  // Flat list for backward compat
+  const menuItems = filteredSections.flatMap(s => s.items);
 
   const handleNavigation = (page: string) => {
     onNavigate(page);
@@ -100,7 +172,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 dark:from-slate-950 dark:via-slate-900 dark:to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-teal-50/40 via-emerald-50/20 to-white dark:from-[#0a1f1a] dark:via-[#0c2219] dark:to-[#0a1f1a]">
       {/* Command Palette */}
       <CommandPalette onNavigate={onNavigate} />
       
@@ -108,7 +180,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       <KeyboardShortcutsHelp />
       
       {/* Top Navigation - Glass Effect */}
-      <header className="bg-white/90 dark:bg-slate-900/95 backdrop-blur-2xl border-b border-slate-200/80 dark:border-slate-700/70 sticky top-0 z-50 shadow-xl dark:shadow-2xl dark:shadow-blue-900/20">
+      <header className="bg-white/90 dark:bg-[#0d2b23]/95 backdrop-blur-2xl border-b border-teal-200/40 dark:border-teal-900/50 sticky top-0 z-50 shadow-xl dark:shadow-2xl dark:shadow-teal-900/30">
         <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4">
           {/* Left Section */}
           <div className="flex items-center gap-3">
@@ -122,12 +194,12 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             </Button>
             
             <div className="flex items-center gap-2 sm:gap-3">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-600 via-blue-700 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/50 dark:shadow-blue-900/50 ring-2 ring-blue-400/20">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-teal-600 via-teal-700 to-emerald-700 rounded-xl flex items-center justify-center shadow-lg shadow-teal-500/50 dark:shadow-teal-900/50 ring-2 ring-teal-400/20">
                 <Package className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
               </div>
               <div className="hidden sm:block">
-                <h1 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Inventory Management</h1>
-                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">System Dashboard</p>
+                <h1 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">Inventory Management</h1>
+                <p className="text-xs text-teal-600 dark:text-teal-400 font-medium">Enterprise Solution</p>
               </div>
             </div>
           </div>
@@ -149,6 +221,17 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               <Search className="w-5 h-5" />
             </Button>
 
+            {/* Support/Ticket Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+              onClick={() => setIsTicketModalOpen(true)}
+              title="Raise Support Ticket"
+            >
+              <HelpCircle className="w-5 h-5 text-teal-500" />
+            </Button>
+
             {/* Theme Switcher */}
             <ThemeSwitcher />
 
@@ -159,7 +242,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                   <Button variant="ghost" className="gap-2 hidden lg:flex hover:bg-slate-100 dark:hover:bg-slate-800">
                     <Avatar className="w-6 h-6">
                       <AvatarImage src={currentTenant.logo} />
-                      <AvatarFallback className="text-xs bg-gradient-to-br from-indigo-500 to-purple-500 text-white">
+                      <AvatarFallback className="text-xs bg-gradient-to-br from-teal-600 to-emerald-600 text-white">
                         {currentTenant.name.substring(0, 2).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
@@ -173,7 +256,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                           "text-[10px] h-4 px-1",
                           currentEnvironment.type === 'production' && "border-red-500/50 text-red-700 dark:text-red-400",
                           currentEnvironment.type === 'staging' && "border-amber-500/50 text-amber-700 dark:text-amber-400",
-                          currentEnvironment.type === 'development' && "border-blue-500/50 text-blue-700 dark:text-blue-400"
+                          currentEnvironment.type === 'development' && "border-teal-500/50 text-teal-700 dark:text-teal-400"
                         )}
                       >
                         {currentEnvironment.type}
@@ -205,7 +288,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                           <div className="flex items-center gap-2 w-full">
                             <Avatar className="w-6 h-6">
                               <AvatarImage src={tenant.logo} />
-                              <AvatarFallback className="text-xs bg-gradient-to-br from-indigo-500 to-purple-500 text-white">
+                              <AvatarFallback className="text-xs bg-gradient-to-br from-teal-600 to-emerald-600 text-white">
                                 {tenant.name.substring(0, 2).toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
@@ -216,7 +299,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                               </Badge>
                             </div>
                             {currentTenant.id === tenant.id && (
-                              <CheckCircle2 className="w-4 h-4 text-indigo-500 flex-shrink-0" />
+                              <CheckCircle2 className="w-4 h-4 text-teal-500 flex-shrink-0" />
                             )}
                           </div>
                         </DropdownMenuItem>
@@ -256,7 +339,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                                 {env.type}
                               </Badge>
                               {currentEnvironment.id === env.id && (
-                                <CheckCircle2 className="w-4 h-4 text-indigo-500" />
+                                <CheckCircle2 className="w-4 h-4 text-teal-500" />
                               )}
                             </div>
                           </div>
@@ -275,7 +358,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="gap-2 hidden sm:flex hover:bg-slate-100 dark:hover:bg-slate-800">
-                  <div className="w-8 h-8 bg-gradient-to-br from-purple-500 via-pink-500 to-rose-500 rounded-full flex items-center justify-center ring-2 ring-purple-400/20 shadow-lg">
+                  <div className="w-8 h-8 bg-gradient-to-br from-teal-500 via-emerald-500 to-green-500 rounded-full flex items-center justify-center ring-2 ring-teal-400/20 shadow-lg">
                     <User className="w-4 h-4 text-white" />
                   </div>
                   <div className="text-left hidden lg:block">
@@ -329,57 +412,63 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         {/* Sidebar - Glass Effect */}
         <aside
           className={cn(
-            "fixed lg:sticky top-[57px] sm:top-[73px] left-0 z-40 w-64 bg-white/90 dark:bg-slate-900/95 backdrop-blur-2xl border-r border-slate-200/80 dark:border-slate-700/70 h-[calc(100vh-57px)] sm:h-[calc(100vh-73px)] transition-transform duration-300 ease-in-out shadow-2xl dark:shadow-2xl dark:shadow-blue-900/20",
+            "fixed lg:sticky top-[57px] sm:top-[73px] left-0 z-40 w-64 bg-white/95 dark:bg-[#0d2b23]/95 backdrop-blur-2xl border-r border-teal-200/30 dark:border-teal-900/50 h-[calc(100vh-57px)] sm:h-[calc(100vh-73px)] transition-transform duration-300 ease-in-out shadow-2xl dark:shadow-2xl dark:shadow-teal-900/30",
             isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
           )}
         >
-          <nav className="p-3 sm:p-4 space-y-1 sm:space-y-2 overflow-y-auto h-full">
-            {menuItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = currentPage === item.id;
-              
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => handleNavigation(item.id)}
-                  className={cn(
-                    "w-full flex items-center gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl transition-all text-left group relative overflow-hidden",
-                    isActive 
-                      ? "bg-gradient-to-r from-blue-500 via-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/50 dark:shadow-blue-900/50" 
-                      : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white"
-                  )}
-                >
-                  {isActive && (
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-purple-400/20 animate-pulse" />
-                  )}
-                  <Icon className={cn(
-                    "w-5 h-5 transition-all duration-300 relative z-10",
-                    isActive ? "text-white scale-110" : "text-slate-600 dark:text-slate-400 group-hover:scale-110 group-hover:text-blue-600 dark:group-hover:text-blue-400"
-                  )} />
-                  <span className="font-semibold text-sm sm:text-base relative z-10">{item.label}</span>
-                  {(item as any).badge && (
-                    <Badge 
-                      variant={isActive ? "secondary" : "default"} 
-                      className={cn(
-                        "ml-auto text-[10px] h-5 px-1.5 relative z-10",
-                        isActive && "bg-white/20 text-white border-white/30"
-                      )}
-                    >
-                      <Sparkles className="w-3 h-3 mr-0.5" />
-                      {(item as any).badge}
-                    </Badge>
-                  )}
-                  {isActive && !(item as any).badge && (
-                    <div className="ml-auto w-2 h-2 rounded-full bg-white shadow-lg shadow-white/50 animate-pulse relative z-10" />
-                  )}
-                </button>
-              );
-            })}
+          <nav className="p-3 sm:p-4 space-y-1 overflow-y-auto h-full">
+            {filteredSections.map((section, si) => (
+              <div key={section.label} className={si > 0 ? 'pt-3' : ''}>
+                <p className="px-3 mb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">{section.label}</p>
+                <div className="space-y-0.5">
+                  {section.items.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = currentPage === item.id;
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => handleNavigation(item.id)}
+                        className={cn(
+                          "w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all text-left group relative overflow-hidden",
+                          isActive
+                            ? "bg-gradient-to-r from-teal-500 via-teal-600 to-emerald-600 text-white shadow-lg shadow-teal-500/40 dark:shadow-teal-900/50"
+                            : "text-slate-700 dark:text-teal-200/70 hover:bg-teal-50 dark:hover:bg-teal-900/30 hover:text-teal-900 dark:hover:text-white"
+                        )}
+                      >
+                        {isActive && (
+                          <div className="absolute inset-0 bg-gradient-to-r from-teal-400/20 to-emerald-400/20 animate-pulse" />
+                        )}
+                        <Icon className={cn(
+                          "w-4 h-4 transition-all duration-300 relative z-10",
+                          isActive ? "text-white scale-110" : "text-slate-600 dark:text-teal-400/60 group-hover:scale-110 group-hover:text-teal-600 dark:group-hover:text-teal-400"
+                        )} />
+                        <span className="font-medium text-sm relative z-10">{item.label}</span>
+                        {(item as any).badge && (
+                          <Badge
+                            variant={isActive ? "secondary" : "default"}
+                            className={cn(
+                              "ml-auto text-[10px] h-5 px-1.5 relative z-10",
+                              isActive && "bg-white/20 text-white border-white/30"
+                            )}
+                          >
+                            <Sparkles className="w-3 h-3 mr-0.5" />
+                            {(item as any).badge}
+                          </Badge>
+                        )}
+                        {isActive && !(item as any).badge && (
+                          <div className="ml-auto w-1.5 h-1.5 rounded-full bg-white shadow-lg shadow-white/50 animate-pulse relative z-10" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
 
             {/* User Info at Bottom (Mobile) */}
             <div className="lg:hidden mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
               <div className="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-slate-100 to-slate-50 dark:from-slate-800 dark:to-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
-                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 via-pink-500 to-rose-500 rounded-full flex items-center justify-center shadow-lg ring-2 ring-purple-400/20">
+                <div className="w-10 h-10 bg-gradient-to-br from-teal-500 via-emerald-500 to-green-500 rounded-full flex items-center justify-center shadow-lg ring-2 ring-teal-400/20">
                   <User className="w-5 h-5 text-white" />
                 </div>
                 <div>
@@ -398,6 +487,8 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           </div>
         </main>
       </div>
+      
+      <RaiseTicketModal isOpen={isTicketModalOpen} onClose={() => setIsTicketModalOpen(false)} />
     </div>
   );
 };

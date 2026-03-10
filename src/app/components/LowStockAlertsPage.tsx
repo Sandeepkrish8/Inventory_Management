@@ -102,7 +102,7 @@ export const LowStockAlertsPage: React.FC = () => {
 
   const getPriorityBadge = (priority: AlertPriority) => {
     const variants = {
-      Low: { variant: 'secondary' as const, className: 'bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400' },
+      Low: { variant: 'secondary' as const, className: 'bg-teal-100 text-teal-700 dark:bg-teal-900/20 dark:text-teal-400' },
       Medium: { variant: 'default' as const, className: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400' },
       High: { variant: 'default' as const, className: 'bg-orange-100 text-orange-700 dark:bg-orange-900/20 dark:text-orange-400' },
       Critical: { variant: 'destructive' as const, className: '' },
@@ -204,8 +204,8 @@ export const LowStockAlertsPage: React.FC = () => {
         <Card>
           <CardContent className="p-4 sm:p-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-50 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
-                <TrendingDown className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-teal-50 dark:bg-teal-900/20 rounded-lg flex items-center justify-center">
+                <TrendingDown className="w-5 h-5 sm:w-6 sm:h-6 text-teal-600" />
               </div>
               <div>
                 <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Critical</p>
@@ -312,7 +312,7 @@ export const LowStockAlertsPage: React.FC = () => {
                         <span className="font-semibold text-red-600">{alert.currentStock}</span>
                       </TableCell>
                       <TableCell>{alert.minStockLevel}</TableCell>
-                      <TableCell className="font-semibold text-blue-600">
+                      <TableCell className="font-semibold text-teal-600">
                         {alert.reorderQuantity}
                       </TableCell>
                       <TableCell>{getPriorityBadge(alert.priority)}</TableCell>
@@ -385,7 +385,7 @@ export const LowStockAlertsPage: React.FC = () => {
                 </div>
                 <div>
                   <p className="text-xs text-slate-500 dark:text-slate-400">Recommended Reorder</p>
-                  <p className="font-semibold text-2xl text-blue-600">{selectedAlert.reorderQuantity}</p>
+                  <p className="font-semibold text-2xl text-teal-600">{selectedAlert.reorderQuantity}</p>
                 </div>
                 <div>
                   <p className="text-xs text-slate-500 dark:text-slate-400">Priority</p>
@@ -393,7 +393,7 @@ export const LowStockAlertsPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+              <div className="bg-teal-50 dark:bg-teal-900/20 p-4 rounded-lg">
                 <p className="text-sm text-blue-900 dark:text-blue-300">
                   <strong>Stock Shortage:</strong> {selectedAlert.minStockLevel - selectedAlert.currentStock} units below minimum level
                 </p>

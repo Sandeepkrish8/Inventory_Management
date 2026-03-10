@@ -105,7 +105,7 @@ export const PredictiveAnalytics: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-semibold flex items-center gap-2">
-            <Brain className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+            <Brain className="w-6 h-6 text-teal-600 dark:text-teal-400" />
             Predictive Analytics
           </h2>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
@@ -201,13 +201,13 @@ export const PredictiveAnalytics: React.FC = () => {
                         </div>
                         <div>
                           <p className="text-xs text-slate-500 dark:text-slate-400">Predicted Demand</p>
-                          <p className="text-base font-semibold text-purple-600 dark:text-purple-400">
+                          <p className="text-base font-semibold text-teal-600 dark:text-teal-400">
                             {prediction.predictedDemand}
                           </p>
                         </div>
                         <div>
                           <p className="text-xs text-slate-500 dark:text-slate-400">Reorder Qty</p>
-                          <p className="text-base font-semibold text-blue-600 dark:text-blue-400">
+                          <p className="text-base font-semibold text-teal-600 dark:text-teal-400">
                             {prediction.recommendedOrderQuantity}
                           </p>
                         </div>
@@ -272,7 +272,7 @@ export const PredictiveAnalytics: React.FC = () => {
                             </div>
                             <div className="flex items-center gap-2">
                               <span className="text-sm text-slate-500">Suggested:</span>
-                              <span className="text-xl font-bold text-blue-600 dark:text-blue-400">
+                              <span className="text-xl font-bold text-teal-600 dark:text-teal-400">
                                 ${suggestion.suggestedPrice.toFixed(2)}
                               </span>
                             </div>
@@ -295,7 +295,7 @@ export const PredictiveAnalytics: React.FC = () => {
                             )}
                             {suggestion.expectedImpact.profitIncrease && (
                               <div className="flex items-center gap-2 text-sm">
-                                <DollarSign className="w-4 h-4 text-blue-500" />
+                                <DollarSign className="w-4 h-4 text-teal-500" />
                                 <span className="text-slate-600 dark:text-slate-300">
                                   +{suggestion.expectedImpact.profitIncrease.toFixed(1)}% profit
                                 </span>

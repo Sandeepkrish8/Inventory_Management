@@ -27,7 +27,7 @@ export const RealTimeStockUpdates: React.FC = () => {
       case 'restock':
         return <TrendingUp className="w-4 h-4 text-green-500" />;
       case 'return':
-        return <RefreshCw className="w-4 h-4 text-blue-500" />;
+        return <RefreshCw className="w-4 h-4 text-teal-500" />;
       default:
         return <Activity className="w-4 h-4 text-amber-500" />;
     }
@@ -40,7 +40,7 @@ export const RealTimeStockUpdates: React.FC = () => {
       case 'restock':
         return 'text-green-600 dark:text-green-400';
       case 'return':
-        return 'text-blue-600 dark:text-blue-400';
+        return 'text-teal-600 dark:text-teal-400';
       default:
         return 'text-amber-600 dark:text-amber-400';
     }

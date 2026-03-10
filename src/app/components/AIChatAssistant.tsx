@@ -207,7 +207,7 @@ export const AIChatAssistant: React.FC<AIChatAssistantProps> = ({ onNavigate }) 
       <CardHeader className="pb-3 border-b">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">
-            <Bot className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+            <Bot className="w-5 h-5 text-teal-600 dark:text-teal-400" />
             AI Assistant
             <Badge variant="secondary" className="gap-1 ml-1">
               <Sparkles className="w-3 h-3" />
@@ -245,30 +245,30 @@ export const AIChatAssistant: React.FC<AIChatAssistantProps> = ({ onNavigate }) 
                 className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 {message.role === 'assistant' && (
-                  <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center flex-shrink-0">
-                    <Bot className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                  <div className="w-8 h-8 rounded-full bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center flex-shrink-0">
+                    <Bot className="w-5 h-5 text-teal-600 dark:text-teal-400" />
                   </div>
                 )}
                 <div
                   className={`px-4 py-2 rounded-lg max-w-[80%] ${
                     message.role === 'user'
-                      ? 'bg-blue-600 text-white'
+                      ? 'bg-teal-600 text-white'
                       : 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100'
                   }`}
                 >
                   <p className="text-sm whitespace-pre-line">{message.content}</p>
                 </div>
                 {message.role === 'user' && (
-                  <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
-                    <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  <div className="w-8 h-8 rounded-full bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center flex-shrink-0">
+                    <User className="w-5 h-5 text-teal-600 dark:text-teal-400" />
                   </div>
                 )}
               </div>
             ))}
             {isProcessing && (
               <div className="flex gap-3">
-                <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                  <Bot className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                <div className="w-8 h-8 rounded-full bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center">
+                  <Bot className="w-5 h-5 text-teal-600 dark:text-teal-400" />
                 </div>
                 <div className="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800">
                   <div className="flex gap-1">

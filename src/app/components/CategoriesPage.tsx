@@ -112,8 +112,8 @@ export const CategoriesPage: React.FC = () => {
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
-                    <FolderTree className="w-5 h-5 text-blue-600" />
+                  <div className="w-10 h-10 bg-teal-50 rounded-lg flex items-center justify-center">
+                    <FolderTree className="w-5 h-5 text-teal-600" />
                   </div>
                   <div>
                     <CardTitle className="text-lg">{category.name}</CardTitle>

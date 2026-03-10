@@ -108,7 +108,7 @@ export const SmartSearch: React.FC<SmartSearchProps> = ({
       <DialogContent className="max-w-2xl max-h-[80vh]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+            <Sparkles className="w-5 h-5 text-teal-600 dark:text-teal-400" />
             AI-Powered Smart Search
           </DialogTitle>
         </DialogHeader>
@@ -142,7 +142,7 @@ export const SmartSearch: React.FC<SmartSearchProps> = ({
                 variant="link"
                 size="sm"
                 onClick={() => handleSuggestionClick(didYouMean)}
-                className="h-auto p-0 text-blue-600 dark:text-blue-400"
+                className="h-auto p-0 text-teal-600 dark:text-teal-400"
               >
                 {didYouMean}
               </Button>
@@ -207,7 +207,7 @@ export const SmartSearch: React.FC<SmartSearchProps> = ({
           <ScrollArea className="h-[400px]">
             {loading ? (
               <div className="flex items-center justify-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div>
               </div>
             ) : results.length > 0 ? (
               <div className="space-y-2">
@@ -240,7 +240,7 @@ export const SmartSearch: React.FC<SmartSearchProps> = ({
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-semibold text-blue-600 dark:text-blue-400">
+                        <p className="font-semibold text-teal-600 dark:text-teal-400">
                           ${product.price.toFixed(2)}
                         </p>
                       </div>

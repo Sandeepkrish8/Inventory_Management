@@ -45,8 +45,8 @@ export const AIDashboard: React.FC<AIDashboardProps> = ({ onNavigate }) => {
       title: 'Predictive Analytics',
       description: 'Demand forecasting',
       count: predictions.length,
-      color: 'text-purple-500',
-      bgColor: 'bg-purple-50 dark:bg-purple-900/20',
+      color: 'text-teal-500',
+      bgColor: 'bg-teal-50 dark:bg-teal-900/20',
     },
     {
       icon: AlertTriangle,
@@ -61,8 +61,8 @@ export const AIDashboard: React.FC<AIDashboardProps> = ({ onNavigate }) => {
       title: 'Dynamic Pricing',
       description: 'AI pricing optimization',
       count: pricingSuggestions.length,
-      color: 'text-blue-500',
-      bgColor: 'bg-blue-50 dark:bg-blue-900/20',
+      color: 'text-teal-500',
+      bgColor: 'bg-teal-50 dark:bg-teal-900/20',
     },
   ];
 
@@ -75,7 +75,7 @@ export const AIDashboard: React.FC<AIDashboardProps> = ({ onNavigate }) => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-600 to-emerald-600 flex items-center justify-center">
               <Sparkles className="w-6 h-6 text-white" />
             </div>
             AI-Powered Inventory
@@ -116,11 +116,11 @@ export const AIDashboard: React.FC<AIDashboardProps> = ({ onNavigate }) => {
       </div>
 
       {/* AI Capabilities Banner */}
-      <Card className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border-purple-200 dark:border-purple-800">
+      <Card className="bg-gradient-to-r from-teal-50 to-teal-50 dark:from-teal-900/20 dark:to-teal-900/20 border-teal-200 dark:border-teal-800">
         <CardContent className="p-6">
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center flex-shrink-0">
-              <Zap className="w-6 h-6 text-purple-600" />
+              <Zap className="w-6 h-6 text-teal-600" />
             </div>
             <div className="flex-1">
               <h3 className="font-semibold text-lg mb-2 flex items-center gap-2">
@@ -136,11 +136,11 @@ export const AIDashboard: React.FC<AIDashboardProps> = ({ onNavigate }) => {
                   <span>Real-time stock updates</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-purple-500" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-teal-500" />
                   <span>Predictive analytics</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-teal-500" />
                   <span>Smart search & filters</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -156,7 +156,7 @@ export const AIDashboard: React.FC<AIDashboardProps> = ({ onNavigate }) => {
                   <span>Error detection</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-teal-500" />
                   <span>Visual analytics</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -217,11 +217,11 @@ export const AIDashboard: React.FC<AIDashboardProps> = ({ onNavigate }) => {
                   <p className="text-sm text-slate-500 mt-1">Prediction Accuracy</p>
                 </div>
                 <div className="text-center p-4 rounded-lg bg-slate-50 dark:bg-slate-800">
-                  <p className="text-3xl font-bold text-blue-600">24/7</p>
+                  <p className="text-3xl font-bold text-teal-600">24/7</p>
                   <p className="text-sm text-slate-500 mt-1">Real-time Monitoring</p>
                 </div>
                 <div className="text-center p-4 rounded-lg bg-slate-50 dark:bg-slate-800">
-                  <p className="text-3xl font-bold text-purple-600">85%</p>
+                  <p className="text-3xl font-bold text-teal-600">85%</p>
                   <p className="text-sm text-slate-500 mt-1">Cost Savings</p>
                 </div>
                 <div className="text-center p-4 rounded-lg bg-slate-50 dark:bg-slate-800">
@@ -248,15 +248,15 @@ export const AIDashboard: React.FC<AIDashboardProps> = ({ onNavigate }) => {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Brain className="w-5 h-5 text-purple-600" />
+                <Brain className="w-5 h-5 text-teal-600" />
                 AI-Generated Insights
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="p-4 rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20">
+                <div className="p-4 rounded-lg border border-teal-200 dark:border-teal-800 bg-teal-50 dark:bg-teal-900/20">
                   <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0">
+                    <div className="w-8 h-8 rounded-full bg-teal-600 flex items-center justify-center flex-shrink-0">
                       <TrendingUp className="w-4 h-4 text-white" />
                     </div>
                     <div>
@@ -271,9 +271,9 @@ export const AIDashboard: React.FC<AIDashboardProps> = ({ onNavigate }) => {
                   </div>
                 </div>
 
-                <div className="p-4 rounded-lg border border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-purple-900/20">
+                <div className="p-4 rounded-lg border border-teal-200 dark:border-teal-800 bg-teal-50 dark:bg-teal-900/20">
                   <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center flex-shrink-0">
+                    <div className="w-8 h-8 rounded-full bg-teal-600 flex items-center justify-center flex-shrink-0">
                       <DollarSign className="w-4 h-4 text-white" />
                     </div>
                     <div>

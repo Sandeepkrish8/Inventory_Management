@@ -16,10 +16,10 @@ interface QuickStatProps {
 
 const colorClasses = {
   blue: {
-    bg: 'bg-blue-500',
-    gradient: 'from-blue-500 to-blue-600',
-    text: 'text-blue-600',
-    lightBg: 'bg-blue-50',
+    bg: 'bg-teal-500',
+    gradient: 'from-teal-500 to-teal-600',
+    text: 'text-teal-600',
+    lightBg: 'bg-teal-50',
   },
   green: {
     bg: 'bg-green-500',
@@ -34,10 +34,10 @@ const colorClasses = {
     lightBg: 'bg-orange-50',
   },
   purple: {
-    bg: 'bg-purple-500',
-    gradient: 'from-purple-500 to-purple-600',
-    text: 'text-purple-600',
-    lightBg: 'bg-purple-50',
+    bg: 'bg-teal-500',
+    gradient: 'from-teal-500 to-teal-600',
+    text: 'text-teal-600',
+    lightBg: 'bg-teal-50',
   },
   red: {
     bg: 'bg-red-500',

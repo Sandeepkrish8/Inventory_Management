@@ -25,8 +25,8 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
           defaultTitle: 'No products found',
           defaultDescription: 'Get started by adding your first product to inventory',
           defaultActionLabel: 'Add Product',
-          iconColor: 'text-blue-600',
-          bgColor: 'bg-blue-50'
+          iconColor: 'text-teal-600',
+          bgColor: 'bg-teal-50'
         };
       case 'orders':
         return {
@@ -43,8 +43,8 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
           defaultTitle: 'No transactions',
           defaultDescription: 'Transaction history will be displayed here',
           defaultActionLabel: null,
-          iconColor: 'text-purple-600',
-          bgColor: 'bg-purple-50'
+          iconColor: 'text-teal-600',
+          bgColor: 'bg-teal-50'
         };
       case 'search':
         return {

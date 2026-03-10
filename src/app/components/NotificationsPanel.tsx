@@ -82,7 +82,7 @@ export const NotificationsPanel: React.FC = () => {
       case 'success':
         return <CheckCircle className="w-5 h-5 text-green-600" />;
       case 'info':
-        return <Package className="w-5 h-5 text-blue-600" />;
+        return <Package className="w-5 h-5 text-teal-600" />;
       case 'error':
         return <X className="w-5 h-5 text-red-600" />;
       default:
@@ -97,7 +97,7 @@ export const NotificationsPanel: React.FC = () => {
       case 'success':
         return 'bg-green-50 border-green-200';
       case 'info':
-        return 'bg-blue-50 border-blue-200';
+        return 'bg-teal-50 border-teal-200';
       case 'error':
         return 'bg-red-50 border-red-200';
       default:
@@ -175,7 +175,7 @@ export const NotificationsPanel: React.FC = () => {
                 <div
                   key={notification.id}
                   className={`p-4 hover:bg-slate-50 transition-colors cursor-pointer group ${
-                    !notification.read ? 'bg-blue-50/30' : ''
+                    !notification.read ? 'bg-teal-50/30' : ''
                   }`}
                   onClick={() => markAsRead(notification.id)}
                 >
@@ -198,7 +198,7 @@ export const NotificationsPanel: React.FC = () => {
                         </div>
                         <div className="flex items-center gap-1">
                           {!notification.read && (
-                            <div className="w-2 h-2 bg-blue-600 rounded-full" />
+                            <div className="w-2 h-2 bg-teal-600 rounded-full" />
                           )}
                           <Button
                             variant="ghost"

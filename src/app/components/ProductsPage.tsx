@@ -1,3 +1,4 @@
+import ProductForm from '@/app/components/ProductForm';
 import React, { useState } from 'react';
 import { mockProducts, mockOrders, mockTransactions } from '@/app/data/mockData';
 import { Product } from '@/app/types';
@@ -51,6 +52,7 @@ import {
   Image as ImageIcon
 } from 'lucide-react';
 import { useAuth } from '@/app/contexts/AuthContext';
+import { useModule } from '@/app/contexts/ModuleContext';
 import { toast } from 'sonner';
 
 export const ProductsPage: React.FC = () => {
@@ -79,25 +81,34 @@ export const ProductsPage: React.FC = () => {
 
   const itemsPerPage = viewMode === 'grid' ? 12 : 10;
 
+  const { module } = useModule();
+
   // Filter products
-  const filteredProducts = products.filter((product) => {
-    const matchesSearch = 
-      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.sku.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = categoryFilter === 'all' || product.category === categoryFilter;
-    
-    // Stock status filter
-    let matchesStock = true;
-    if (stockFilter === 'in-stock') {
-      matchesStock = product.quantity > product.minStockLevel;
-    } else if (stockFilter === 'low-stock') {
-      matchesStock = product.quantity > 0 && product.quantity <= product.minStockLevel;
-    } else if (stockFilter === 'out-of-stock') {
-      matchesStock = product.quantity === 0;
-    }
-    
-    return matchesSearch && matchesCategory && matchesStock;
-  });
+  const filteredProducts = products
+    .filter((p) => {
+      if (module === 'general') return true;
+      if (module === 'pharmacy') return p.category === 'Pharmacy' || !!p.medicineName;
+      if (module === 'manufacturing') return p.category === 'Manufacturing' || !!p.productType;
+      return true;
+    })
+    .filter((product) => {
+      const matchesSearch = 
+        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.sku.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory = categoryFilter === 'all' || product.category === categoryFilter;
+      
+      // Stock status filter
+      let matchesStock = true;
+      if (stockFilter === 'in-stock') {
+        matchesStock = product.quantity > product.minStockLevel;
+      } else if (stockFilter === 'low-stock') {
+        matchesStock = product.quantity > 0 && product.quantity <= product.minStockLevel;
+      } else if (stockFilter === 'out-of-stock') {
+        matchesStock = product.quantity === 0;
+      }
+      
+      return matchesSearch && matchesCategory && matchesStock;
+    });
 
   // Pagination
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
@@ -294,8 +305,8 @@ export const ProductsPage: React.FC = () => {
       </Card>
 
       {selectedIds.size > 0 && (
-        <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-          <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
+        <div className="flex items-center gap-3 p-3 bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-800 rounded-lg">
+          <span className="text-sm font-medium text-teal-700 dark:text-blue-300">
             {selectedIds.size} product{selectedIds.size > 1 ? 's' : ''} selected
           </span>
           <Button size="sm" variant="outline" onClick={() => {
@@ -430,10 +441,14 @@ export const ProductsPage: React.FC = () => {
               {paginatedProducts.map((product) => {
                 const stockStatus = getStockStatus(product);
                 return (
-                  <Card key={product.id} className="flex flex-col hover:shadow-lg transition-shadow">
+                  <Card key={product.id} className="flex flex-col hover:shadow-lg transition-shadow group">
                     {product.imageUrl && (
                       <div className="w-full h-32 rounded-t-lg overflow-hidden bg-slate-100">
-                        <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+                        <img
+                          src={product.imageUrl}
+                          alt={product.name}
+                          className="w-full h-full object-cover transform transition-transform duration-300 ease-out group-hover:scale-105"
+                        />
                       </div>
                     )}
                     <CardHeader className="pb-3">
@@ -576,174 +591,13 @@ export const ProductsPage: React.FC = () => {
 
       {/* Product Dialog */}
       <Dialog open={dialogMode !== null} onOpenChange={handleCloseDialog}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              {dialogMode === 'add' && 'Add New Product'}
-              {dialogMode === 'edit' && 'Edit Product'}
-              {dialogMode === 'view' && 'Product Details'}
-            </DialogTitle>
-            <DialogDescription>
-              {dialogMode === 'view' 
-                ? 'View product information' 
-                : 'Fill in the product information below'}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="grid grid-cols-2 gap-4 py-4">
-            <div className="col-span-2 space-y-2">
-              <Label>Product Image</Label>
-              <div className="flex items-center gap-4">
-                <div className="w-20 h-20 rounded-lg border-2 border-dashed border-slate-300 dark:border-slate-600 flex items-center justify-center overflow-hidden bg-slate-50 dark:bg-slate-800">
-                  {(formData.imageUrl) ? (
-                    <img src={formData.imageUrl} alt="Product" className="w-full h-full object-cover rounded-lg" />
-                  ) : (
-                    <ImageIcon className="w-8 h-8 text-slate-400" />
-                  )}
-                </div>
-                {dialogMode !== 'view' && (
-                  <div className="space-y-1">
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      className="max-w-xs"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          const reader = new FileReader();
-                          reader.onloadend = () => {
-                            setFormData({ ...formData, imageUrl: reader.result as string });
-                          };
-                          reader.readAsDataURL(file);
-                        }
-                      }}
-                    />
-                    <p className="text-xs text-slate-500">PNG, JPG up to 5MB</p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="name">Product Name *</Label>
-              <Input
-                id="name"
-                value={formData.name || ''}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                disabled={dialogMode === 'view'}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="sku">SKU *</Label>
-              <Input
-                id="sku"
-                value={formData.sku || ''}
-                onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                disabled={dialogMode === 'view'}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="barcode">Barcode</Label>
-              <Input
-                id="barcode"
-                value={formData.barcode || ''}
-                onChange={(e) => setFormData({ ...formData, barcode: e.target.value })}
-                disabled={dialogMode === 'view'}
-                placeholder="e.g. 8901234567890"
-              />
-            </div>
-
-            <div className="col-span-2 space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={formData.description || ''}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                disabled={dialogMode === 'view'}
-                rows={3}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="category">Category *</Label>
-              <Input
-                id="category"
-                value={formData.category || ''}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                disabled={dialogMode === 'view'}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="supplier">Supplier *</Label>
-              <Input
-                id="supplier"
-                value={formData.supplier || ''}
-                onChange={(e) => setFormData({ ...formData, supplier: e.target.value })}
-                disabled={dialogMode === 'view'}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="quantity">Quantity *</Label>
-              <Input
-                id="quantity"
-                type="number"
-                value={formData.quantity || 0}
-                onChange={(e) => setFormData({ ...formData, quantity: Number(e.target.value) })}
-                disabled={dialogMode === 'view'}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="minStockLevel">Min Stock Level *</Label>
-              <Input
-                id="minStockLevel"
-                type="number"
-                value={formData.minStockLevel || 0}
-                onChange={(e) => setFormData({ ...formData, minStockLevel: Number(e.target.value) })}
-                disabled={dialogMode === 'view'}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="unitPrice">Unit Price *</Label>
-              <Input
-                id="unitPrice"
-                type="number"
-                step="0.01"
-                value={formData.unitPrice || 0}
-                onChange={(e) => setFormData({ ...formData, unitPrice: Number(e.target.value) })}
-                disabled={dialogMode === 'view'}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="sellingPrice">Selling Price *</Label>
-              <Input
-                id="sellingPrice"
-                type="number"
-                step="0.01"
-                value={formData.sellingPrice || 0}
-                onChange={(e) => setFormData({ ...formData, sellingPrice: Number(e.target.value) })}
-                disabled={dialogMode === 'view'}
-              />
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={handleCloseDialog}>
-              {dialogMode === 'view' ? 'Close' : 'Cancel'}
-            </Button>
-            {dialogMode !== 'view' && (
-              <Button onClick={handleSave}>
-                {dialogMode === 'add' ? 'Add Product' : 'Save Changes'}
-              </Button>
-            )}
-          </DialogFooter>
-        </DialogContent>
+          <ProductForm
+            mode={dialogMode}
+            formData={formData}
+            setFormData={setFormData}
+            onCancel={handleCloseDialog}
+            onSubmit={handleSave}
+          />
       </Dialog>
     </div>
   );

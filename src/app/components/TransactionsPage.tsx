@@ -49,8 +49,8 @@ export const TransactionsPage: React.FC = () => {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
-                <ArrowUpCircle className="w-6 h-6 text-blue-600" />
+              <div className="w-12 h-12 bg-teal-50 rounded-lg flex items-center justify-center">
+                <ArrowUpCircle className="w-6 h-6 text-teal-600" />
               </div>
               <div>
                 <p className="text-sm text-slate-500">Total Stock In</p>

@@ -55,7 +55,7 @@ export const ErrorDetectionPanel: React.FC = () => {
       case 'medium':
         return <AlertCircle className="w-5 h-5 text-amber-600" />;
       case 'low':
-        return <Info className="w-5 h-5 text-blue-600" />;
+        return <Info className="w-5 h-5 text-teal-600" />;
       default:
         return <Info className="w-5 h-5 text-slate-600" />;
     }
@@ -70,7 +70,7 @@ export const ErrorDetectionPanel: React.FC = () => {
       case 'medium':
         return 'bg-amber-100 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800';
       case 'low':
-        return 'bg-blue-100 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800';
+        return 'bg-teal-100 dark:bg-teal-900/20 border-teal-200 dark:border-teal-800';
       default:
         return 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700';
     }
@@ -127,7 +127,7 @@ export const ErrorDetectionPanel: React.FC = () => {
       {/* Summary Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
         <Card 
-          className={`cursor-pointer transition-all ${filter === 'all' ? 'ring-2 ring-blue-500' : ''}`}
+          className={`cursor-pointer transition-all ${filter === 'all' ? 'ring-2 ring-teal-500' : ''}`}
           onClick={() => setFilter('all')}
         >
           <CardContent className="p-4 text-center">
@@ -163,11 +163,11 @@ export const ErrorDetectionPanel: React.FC = () => {
           </CardContent>
         </Card>
         <Card 
-          className={`cursor-pointer transition-all ${filter === 'low' ? 'ring-2 ring-blue-500' : ''}`}
+          className={`cursor-pointer transition-all ${filter === 'low' ? 'ring-2 ring-teal-500' : ''}`}
           onClick={() => setFilter('low')}
         >
           <CardContent className="p-4 text-center">
-            <p className="text-2xl font-bold text-blue-600">{errorCounts.low}</p>
+            <p className="text-2xl font-bold text-teal-600">{errorCounts.low}</p>
             <p className="text-xs text-slate-500 mt-1">Low</p>
           </CardContent>
         </Card>
@@ -183,7 +183,7 @@ export const ErrorDetectionPanel: React.FC = () => {
         <CardContent>
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div>
             </div>
           ) : filteredErrors.length > 0 ? (
             <ScrollArea className="h-[500px]">

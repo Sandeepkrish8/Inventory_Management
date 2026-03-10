@@ -69,15 +69,15 @@ export const ThemeSwitcher: React.FC = () => {
         >
           <Sun className="w-4 h-4 mr-2 text-amber-500" />
           <span>Light</span>
-          {theme === 'light' && <div className="ml-auto w-2 h-2 bg-blue-600 rounded-full" />}
+          {theme === 'light' && <div className="ml-auto w-2 h-2 bg-teal-600 rounded-full" />}
         </DropdownMenuItem>
         <DropdownMenuItem 
           onClick={() => handleThemeChange('dark')}
           className="cursor-pointer"
         >
-          <Moon className="w-4 h-4 mr-2 text-indigo-500" />
+          <Moon className="w-4 h-4 mr-2 text-teal-500" />
           <span>Dark</span>
-          {theme === 'dark' && <div className="ml-auto w-2 h-2 bg-blue-600 rounded-full" />}
+          {theme === 'dark' && <div className="ml-auto w-2 h-2 bg-teal-600 rounded-full" />}
         </DropdownMenuItem>
         <DropdownMenuItem 
           onClick={() => handleThemeChange('system')}
@@ -85,7 +85,7 @@ export const ThemeSwitcher: React.FC = () => {
         >
           <Monitor className="w-4 h-4 mr-2 text-slate-500" />
           <span>System</span>
-          {theme === 'system' && <div className="ml-auto w-2 h-2 bg-blue-600 rounded-full" />}
+          {theme === 'system' && <div className="ml-auto w-2 h-2 bg-teal-600 rounded-full" />}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

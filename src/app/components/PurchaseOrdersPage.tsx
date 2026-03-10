@@ -304,7 +304,7 @@ export const PurchaseOrdersPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-            <FileText className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600" />
+            <FileText className="w-6 h-6 sm:w-8 sm:h-8 text-teal-600" />
             Purchase Orders
           </h2>
           <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 mt-1">
@@ -324,8 +324,8 @@ export const PurchaseOrdersPage: React.FC = () => {
         <Card>
           <CardContent className="p-4 sm:p-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
-                <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-teal-50 dark:bg-teal-900/20 rounded-lg flex items-center justify-center">
+                <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-teal-600" />
               </div>
               <div>
                 <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Total POs</p>
@@ -482,7 +482,7 @@ export const PurchaseOrdersPage: React.FC = () => {
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <FileText className="w-5 h-5 text-blue-600" />
+              <FileText className="w-5 h-5 text-teal-600" />
               Purchase Order Details
             </DialogTitle>
             <DialogDescription>
@@ -553,7 +553,7 @@ export const PurchaseOrdersPage: React.FC = () => {
               <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-lg">
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-semibold">Total Amount:</span>
-                  <span className="text-2xl font-bold text-blue-600">
+                  <span className="text-2xl font-bold text-teal-600">
                     ${selectedPO.total.toFixed(2)}
                   </span>
                 </div>
@@ -609,7 +609,7 @@ export const PurchaseOrdersPage: React.FC = () => {
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Plus className="w-5 h-5 text-blue-600" />
+              <Plus className="w-5 h-5 text-teal-600" />
               Create New Purchase Order
             </DialogTitle>
             <DialogDescription>
@@ -748,7 +748,7 @@ export const PurchaseOrdersPage: React.FC = () => {
             <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4">
               <div className="flex justify-between items-center">
                 <span className="font-semibold text-slate-700 dark:text-slate-300">PO Total:</span>
-                <span className="text-xl font-bold text-blue-600">
+                <span className="text-xl font-bold text-teal-600">
                   ${createFormTotal.toFixed(2)}
                 </span>
               </div>

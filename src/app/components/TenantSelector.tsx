@@ -87,7 +87,7 @@ export const TenantSelector: React.FC<TenantSelectorProps> = ({ onComplete }) =>
       case 'synced':
         return <Badge className="bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20">Synced</Badge>;
       case 'syncing':
-        return <Badge className="bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20">Syncing</Badge>;
+        return <Badge className="bg-teal-500/10 text-teal-700 dark:text-teal-400 border-teal-500/20">Syncing</Badge>;
       case 'error':
         return <Badge className="bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20">Error</Badge>;
       case 'offline':
@@ -126,15 +126,15 @@ export const TenantSelector: React.FC<TenantSelectorProps> = ({ onComplete }) =>
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 flex items-center justify-center p-4">
       {/* Background geometric patterns */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 right-10 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 left-10 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl"></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-500/5 rounded-full blur-3xl"></div>
+        <div className="absolute top-20 right-10 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 left-10 w-72 h-72 bg-teal-500/10 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-teal-500/5 rounded-full blur-3xl"></div>
       </div>
 
       <div className="w-full max-w-5xl relative z-10">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-500 mb-4 shadow-2xl shadow-indigo-500/50">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-teal-600 to-emerald-600 mb-4 shadow-2xl shadow-teal-500/50">
             <Globe className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">Select Workspace</h1>
@@ -209,7 +209,7 @@ export const TenantSelector: React.FC<TenantSelectorProps> = ({ onComplete }) =>
                             <div className="flex items-start gap-3">
                               <Avatar className="w-12 h-12">
                                 <AvatarImage src={tenant.logo} />
-                                <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-500 text-white">
+                                <AvatarFallback className="bg-gradient-to-br from-teal-600 to-emerald-600 text-white">
                                   {tenant.name.substring(0, 2).toUpperCase()}
                                 </AvatarFallback>
                               </Avatar>
@@ -217,7 +217,7 @@ export const TenantSelector: React.FC<TenantSelectorProps> = ({ onComplete }) =>
                                 <div className="flex items-center justify-between mb-1">
                                   <h3 className="font-semibold text-sm truncate">{tenant.name}</h3>
                                   {selectedTenantId === tenant.id && (
-                                    <CheckCircle2 className="w-5 h-5 text-indigo-500 flex-shrink-0" />
+                                    <CheckCircle2 className="w-5 h-5 text-teal-500 flex-shrink-0" />
                                   )}
                                 </div>
                                 <div className="flex items-center gap-2 flex-wrap">
@@ -338,16 +338,16 @@ export const TenantSelector: React.FC<TenantSelectorProps> = ({ onComplete }) =>
               <>
                 <Separator className="my-6" />
                 
-                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/20 dark:to-purple-950/20 rounded-lg p-4 mb-4">
+                <div className="bg-gradient-to-r from-teal-50 to-teal-50 dark:from-teal-950/20 dark:to-purple-950/20 rounded-lg p-4 mb-4">
                   <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-indigo-500" />
+                    <CheckCircle2 className="w-4 h-4 text-teal-500" />
                     Selected Workspace
                   </h4>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <Avatar className="w-8 h-8">
                         <AvatarImage src={selectedTenant.logo} />
-                        <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-500 text-white text-xs">
+                        <AvatarFallback className="bg-gradient-to-br from-teal-600 to-emerald-600 text-white text-xs">
                           {selectedTenant.name.substring(0, 2).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
@@ -367,7 +367,7 @@ export const TenantSelector: React.FC<TenantSelectorProps> = ({ onComplete }) =>
 
                 <Button 
                   onClick={handleContinue}
-                  className="w-full bg-gradient-to-r from-indigo-600 to-purple-500 hover:from-indigo-700 hover:to-purple-600 text-white"
+                  className="w-full bg-gradient-to-r from-teal-600 to-teal-500 hover:from-teal-700 hover:to-teal-600 text-white"
                   disabled={loading}
                   size="lg"
                 >
